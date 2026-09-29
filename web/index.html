@@ -137,6 +137,26 @@ code { font: 13px ui-monospace, Menlo, monospace; background: #232640; padding: 
 .os .note { font-size: 13px; color: var(--muted); margin: 0; }
 .os .note b { color: var(--ink); font-weight: 500; }
 
+/* 프리미엄 */
+.buy { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.packs { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; background: var(--line); border: 2px solid var(--line); }
+.packs li { background: var(--panel); padding: 14px 18px; display: flex; gap: 14px; align-items: baseline; min-width: 0; }
+.packs .t { font: 700 10px var(--pixel); letter-spacing: 0.08em; color: var(--ember); width: 64px; flex: none; }
+.packs b { font-weight: 700; }
+.packs span.d { color: var(--muted); font-size: 13px; }
+.price { background: var(--panel); border: 2px solid var(--ember); padding: 24px; box-shadow: 6px 6px 0 #8A5A10; }
+.price .amt { font: 400 44px/1 var(--display); margin: 0 0 4px; }
+.price .amt small { font: 12px var(--pixel); color: var(--muted); margin-left: 8px; letter-spacing: 0.04em; }
+.price ul { list-style: none; margin: 16px 0 20px; padding: 0; display: grid; gap: 6px; font-size: 14px; color: #CFCDE3; }
+.price li::before { content: "+ "; color: var(--hp); font: 700 12px var(--pixel); }
+.price .btn { width: 100%; justify-content: center; }
+.btn[aria-disabled="true"] { background: #3A3D5C; color: var(--muted); box-shadow: none; cursor: default; pointer-events: none; }
+.price .fine { font-size: 12px; color: var(--muted); margin: 14px 0 0; }
+.price .fine a { color: var(--muted); }
+.faq { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; font-size: 14px; color: #CFCDE3; }
+.faq h3 { font: 700 15px var(--body); margin: 0 0 4px; color: var(--ink); }
+.faq p { margin: 0; }
+
 footer { border-top: 1px solid var(--line); padding-block: 28px 40px; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 footer a { color: var(--muted); }
 
@@ -145,10 +165,12 @@ footer a { color: var(--muted); }
   .screen { justify-self: start; }
   .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rule:last-child { grid-column: 1 / -1; }
+  .buy { grid-template-columns: minmax(0, 1fr); }
+  .faq { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 620px) {
   .top nav { display: none; }
-  .feats, .dl { grid-template-columns: minmax(0, 1fr); }
+  .feats, .dl, .buy, .faq { grid-template-columns: minmax(0, 1fr); }
   .rules { grid-template-columns: minmax(0, 1fr); }
   .reads td:last-child { display: none; }
   .screen { padding: 18px; }
@@ -162,6 +184,7 @@ footer a { color: var(--muted); }
     <nav>
       <a href="#rules">규칙</a>
       <a href="#features">기능</a>
+      <a href="#premium">프리미엄</a>
       <a href="#privacy">읽는 것</a>
       <a href="#download">받기</a>
       <a href="https://github.com/sigcrew/token-slayer-releases/releases">모든 버전</a>
@@ -220,6 +243,36 @@ footer a { color: var(--muted); }
       </div>
     </section>
 
+    <section id="premium">
+      <h2>프리미엄 꾸미기 팩</h2>
+      <p class="sub">앱은 계속 무료예요. 꾸미기를 더 즐기고 싶다면 팩 5종을 한 번에 열 수 있어요. 결제하면 개발을 응원하는 셈이 돼요.</p>
+      <div class="buy">
+        <ul class="packs">
+          <li><span class="t">HERO</span><span><b>사무라이</b> <span class="d">황금 뿔 투구와 카타나</span></span></li>
+          <li><span class="t">HERO</span><span><b>닌자</b> <span class="d">복면과 수리검</span></span></li>
+          <li><span class="t">ENEMY</span><span><b>레거시 코드</b> <span class="d">GOTO · EVAL · JQUERY가 날아와요</span></span></li>
+          <li><span class="t">ENEMY</span><span><b>회의 지옥</b> <span class="d">MTG · JIRA · ALL-HANDS</span></span></li>
+          <li><span class="t">REST</span><span><b>별밤 랜턴</b> <span class="d">모닥불 대신 은은한 랜턴</span></span></li>
+        </ul>
+        <div class="price">
+          <p class="amt">$5<small>ONE-TIME · 출시 기념가</small></p>
+          <ul>
+            <li>구독 없이 한 번만 결제</li>
+            <li>팩 5종 전부, 앞으로 추가되는 프리미엄 팩도 포함</li>
+            <li>컴퓨터 2대까지 사용 (맥 · 윈도우 모두)</li>
+            <li>결제하면 라이선스 키를 이메일로 보내 드려요</li>
+          </ul>
+          <a class="btn" id="buy" href="%%CHECKOUT_URL%%">프리미엄 팩 구매하기</a>
+          <p class="fine">결제는 Lemon Squeezy가 처리하고 부가세도 여기서 계산돼요. 카드 정보는 이 앱과 사이트에 저장되지 않아요.</p>
+        </div>
+      </div>
+      <div class="faq">
+        <div><h3>레벨을 올려도 열리나요?</h3><p>네. 사무라이는 Lv.10, 닌자는 Lv.20처럼 어느 용사든 레벨이 되면 무료로 열려요. 결제는 바로 쓰고 싶은 분을 위한 지름길이에요.</p></div>
+        <div><h3>어떻게 적용하나요?</h3><p>앱의 <b>꾸미기 → 프리미엄 팩 구매하기</b>에서 결제하고, 받은 키를 복사한 뒤 <b>복사한 라이선스 키로 잠금 해제</b>를 누르면 끝이에요.</p></div>
+        <div><h3>환불되나요?</h3><p>구매 후 14일 안에는 이유를 묻지 않고 환불해 드려요. 환불하면 키는 자동으로 비활성화돼요. 문의는 <a href="https://github.com/sigcrew/token-slayer-releases/issues">GitHub 이슈</a>로 남겨 주세요.</p></div>
+      </div>
+    </section>
+
     <section id="privacy">
       <h2>무엇을 읽나요</h2>
       <p class="sub">이미 로그인해 둔 앱의 정보로 사용량만 물어봐요. 대화 내용은 읽지 않아요.</p>
@@ -268,6 +321,15 @@ footer a { color: var(--muted); }
 <script src="builtin-packs.js"></script>
 <script src="scene.js"></script>
 <script>
+(function () {
+  // ── 구매 링크가 아직 없으면 버튼을 잠근다 ──
+  const buy = document.getElementById('buy');
+  if (buy && buy.getAttribute('href').indexOf('%%') === 0) {
+    buy.removeAttribute('href');
+    buy.setAttribute('aria-disabled', 'true');
+    buy.textContent = '곧 열려요';
+  }
+})();
 (function () {
   // ── 내 컴퓨터에 맞는 받기 버튼 ──
   const REL = 'https://github.com/sigcrew/token-slayer-releases/releases/latest/download/';
