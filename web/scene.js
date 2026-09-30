@@ -225,12 +225,17 @@
       this.w = this.c.clientWidth || 232;
       this.h = this.height() || 1;
       this.c.style.height = `${this.h}px`;
-      this.c.width = Math.round(this.w * dpr);
-      this.c.height = Math.round(this.h * dpr);
+      // 캔버스는 width·height에 값을 넣는 순간(같은 값이어도) 내용이 지워진다. 크기가 실제로 바뀔 때만 넣고,
+      // 바뀌었으면 다음 프레임(쉬는 동안엔 최대 0.125초 뒤)을 기다리지 말고 바로 다시 그려서 깜빡임을 없앤다
+      const W = Math.round(this.w * dpr), H = Math.round(this.h * dpr);
+      const changed = this.c.width !== W || this.c.height !== H || this.T !== dpr;
+      if (this.c.width !== W) this.c.width = W;
+      if (this.c.height !== H) this.c.height = H;
       // 확대/축소(창 크기 설정) 때도 도트가 뭉개지지 않도록, 좌표를 직접 화면 픽셀로 바꿔 그린다
       this.T = dpr;
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.imageSmoothingEnabled = false;
+      if (changed && this.heroes) this.draw();
     }
 
     setHeroes(metas) {
