@@ -478,8 +478,14 @@
     }
 
     frame(dt) {
-      this.update(Math.min(dt, 0.05));
+      this.update(Math.min(dt, 0.1));
       this.draw();
+    }
+
+    // 지금 빠른 움직임(전투·피격·물약 등)이 있는지. 모닥불·깜빡임처럼 느려도 되는 장면이면 false
+    isActive() {
+      return this.heroes.some((h) => h.busy || h.dead || h.alert || h.enemies.length || h.floaters.length ||
+        h.hitT > 0 || h.swingT > 0 || h.potionT > 0 || h.jumpT > 0 || h.standT > 0 || h.angryT > 0 || h.levelUpT > 0 || h.burning);
     }
 
     // ───────── 그리기 도구 ─────────
@@ -848,11 +854,23 @@
         const [r, g, b] = hex2rgb(rt.glow);
         const cy = fy + frame.length * PX * 0.4;
         const T = this.T;
-        const glow = ctx.createRadialGradient((fx + 7) * T, cy * T, 2 * T, (fx + 7) * T, cy * T, 32 * T);
-        glow.addColorStop(0, `rgba(${r},${g},${b},${0.26 + Math.sin(this.time * 9) * 0.05})`);
-        glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
-        ctx.fillStyle = glow;
-        ctx.fillRect((fx - 26) * T, (cy - 30) * T, 66 * T, 56 * T);
+        // 빛 번짐 그라디언트는 한 번만 그려 두고, 깜빡임은 투명도만 바꿔서 쓴다 (매 프레임 새로 만들지 않음)
+        const key = `${rt.glow}|${T}`;
+        if (!this.glowCache || this.glowCache.key !== key) {
+          const cv = document.createElement('canvas');
+          cv.width = Math.round(66 * T); cv.height = Math.round(56 * T);
+          const g2 = cv.getContext('2d');
+          const grad = g2.createRadialGradient(33 * T, 30 * T, 2 * T, 33 * T, 30 * T, 32 * T);
+          grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+          grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          g2.fillStyle = grad;
+          g2.fillRect(0, 0, cv.width, cv.height);
+          this.glowCache = { key, cv };
+        }
+        const prevAlpha = ctx.globalAlpha;
+        ctx.globalAlpha = prevAlpha * (0.26 + Math.sin(this.time * 9) * 0.05);
+        ctx.drawImage(this.glowCache.cv, Math.round((fx - 26) * T), Math.round((cy - 30) * T));
+        ctx.globalAlpha = prevAlpha;
       }
       this.blit(frame, fx, fy, { o: INK, ...rt.palette });
 
