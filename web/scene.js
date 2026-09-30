@@ -496,9 +496,10 @@
     }
 
     // 지금 빠른 움직임(전투·피격·물약 등)이 있는지. 모닥불·깜빡임처럼 느려도 되는 장면이면 false
+    // (GAME OVER · 경고 말풍선 · BURNING TIME은 오래 이어질 수 있고 빠른 동작이 아니라서 넣지 않는다)
     isActive() {
-      return this.heroes.some((h) => h.busy || h.dead || h.alert || h.enemies.length || h.floaters.length ||
-        h.hitT > 0 || h.swingT > 0 || h.potionT > 0 || h.jumpT > 0 || h.standT > 0 || h.angryT > 0 || h.levelUpT > 0 || h.burning);
+      return this.heroes.some((h) => h.busy || h.enemies.length || h.floaters.length ||
+        h.hitT > 0 || h.swingT > 0 || h.potionT > 0 || h.jumpT > 0 || h.standT > 0 || h.angryT > 0 || h.levelUpT > 0);
     }
 
     // ───────── 그리기 도구 ─────────
