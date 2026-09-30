@@ -126,7 +126,8 @@
     fatal: ['BUG', '429', 'ERR'],
   };
   const DEFAULT_REST = { id: 'campfire', frames: FLAME.map((f) => [...f, 'BbbbB', '.BbB.']), palette: FIRE, glow: '#FF9F1C', embers: true };
-  const RANGED = { staff: true, bow: true, shuriken: true };
+  const RANGED = { staff: true, bow: true, shuriken: true, terminal: true, raygun: true, claw: true, keyboard: true, pistol: true };
+  const SHOT_SPEED = { staff: 220, raygun: 520, pistol: 420 }; // 그 밖의 원거리 탄은 300
 
   function hex2rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
   const darken = (hex, f) => { const [r, g, b] = hex2rgb(hex); return `rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)})`; };
@@ -268,6 +269,7 @@
       if (s.alert !== undefined) h.alert = s.alert;
       if (s.question !== undefined) h.question = s.question;
       if (s.resetAt !== undefined) h.resetAt = s.resetAt;
+      if (s.hpTag !== undefined) h.hpTag = s.hpTag;
       if (s.burning !== undefined) h.burning = s.burning;
       if (s.eta !== undefined) { h.eta = s.eta; h.etaAt = Date.now(); }
       if (s.levelProgress !== undefined) h.levelProgress = s.levelProgress || 0;
@@ -310,13 +312,13 @@
     // 드래곤은 전설급: 적 하나당 1/60000, 한 번 나오면 7일은 안 나옴 (앱을 다시 켜도 유지)
     dragonReady() {
       if (this.dragonNext == null) {
-        try { this.dragonNext = Number(localStorage.getItem('tb.dragonNext')) || 0; } catch { this.dragonNext = 0; }
+        try { this.dragonNext = Number(localStorage.getItem('ts.dragonNext') || localStorage.getItem('tb.dragonNext')) || 0; } catch { this.dragonNext = 0; }
       }
       return Date.now() >= this.dragonNext;
     }
     dragonSeen() {
       this.dragonNext = Date.now() + 7 * 86400e3;
-      try { localStorage.setItem('tb.dragonNext', String(this.dragonNext)); } catch {}
+      try { localStorage.setItem('ts.dragonNext', String(this.dragonNext)); } catch {}
     }
 
     // 드래곤 처치: 큰 폭발 + 알림
@@ -388,7 +390,7 @@
       const ground = top + LANE_H - 7;
       const heroX = 10;
       const wpn = h.skin.weapon || 'sword';
-      const reach = heroX + 12 * PX + (wpn === 'katana' ? 24 : 18);
+      const reach = heroX + 12 * PX + (wpn === 'katana' ? 24 : wpn === 'trident' ? 22 : wpn === 'axe' ? 20 : 18);
       const ranged = !!RANGED[wpn];
 
       // 아직 날아오는 중인 공격만큼은 HP가 덜 깎인 것으로 보여줌 (맞는 순간 깎임)
@@ -455,17 +457,17 @@
           if (h.swingT <= 0 && h.hitT <= 0) h.swingT = h.hp != null && h.hp < 20 ? 0.4 : 0.26;
           e.dead = true;
           if (e.dragon) this.slayDragon(h, e, ground);
-          for (let k = 0; k < 6; k++) h.parts.push({ x: e.x + 4, y: ground - 12 - e.bob, vx: rand(10, 90), vy: rand(-80, 10), life: 0.5, max: 0.5, color: e.color });
+          if (!this.killBurst(h, e.x + 4, ground - 12 - e.bob, e)) for (let k = 0; k < 6; k++) h.parts.push({ x: e.x + 4, y: ground - 12 - e.bob, vx: rand(10, 90), vy: rand(-80, 10), life: 0.5, max: 0.5, color: e.color });
         } else if (ranged && !e.targeted && e.x <= this.w * 0.72 && h.swingT <= 0 && h.hitT <= 0) {
           // 원거리: 마법탄 · 화살 · 수리검을 쏜다
           e.targeted = true;
           h.swingT = 0.3;
-          h.shots.push({ x: heroX + 13 * PX, y: ground - 9 * PX, target: e, kind: wpn, t: 0 });
+          h.shots.push({ x: heroX + 13 * PX, y: ground - 9 * PX, target: e, kind: wpn, t: 0, letter: wpn === 'keyboard' ? 'QWERTYUASDFGHZXCVB'[Math.floor(Math.random() * 18)] : null });
         }
       }
       for (const sh of h.shots) {
         sh.t += dt;
-        sh.x += (sh.kind === 'staff' ? 220 : 300) * dt;
+        sh.x += (SHOT_SPEED[sh.kind] || 300) * dt;
         const e = sh.target;
         const ty = ground - 12 - (e.bob || 0);
         sh.y += (ty - sh.y) * Math.min(1, dt * 8);
@@ -474,7 +476,7 @@
           sh.done = true;
           if (e.dragon) this.slayDragon(h, e, ground);
           const col = sh.kind === 'staff' ? lighten(h.color, 0.4) : e.color;
-          for (let k = 0; k < 7; k++) h.parts.push({ x: e.x, y: ty, vx: rand(-40, 90), vy: rand(-80, 10), life: 0.5, max: 0.5, color: k % 2 ? col : e.color });
+          if (!this.killBurst(h, e.x, ty, e)) for (let k = 0; k < 7; k++) h.parts.push({ x: e.x, y: ty, vx: rand(-40, 90), vy: rand(-80, 10), life: 0.5, max: 0.5, color: k % 2 ? col : e.color });
         }
         if (e.dead && !sh.done && sh.x > e.x + 20) sh.done = true;
       }
@@ -616,17 +618,20 @@
       this.text(hr.name, lx, top + 6, lighten(hr.color, 0.2));
       const hpTxt = hr.hp == null ? '--' : `${Math.round(hr.hpTarget != null ? hr.hpTarget : hr.hp)}%`;
       this.text(hpTxt, w - 10, top + 6, hr.hp == null ? '#6B6F86' : hr.dead ? '#FF4D5A' : '#F4F4F8', { align: 'right' });
+      // HP가 어느 한도 기준인지 (5H 5시간 · WK 주간 · MO 월간): 숫자 왼쪽. BURN·OUT 표시는 그만큼 더 왼쪽으로
+      const tagW = hr.hpTag && hr.hp != null ? this.textWidth(hr.hpTag, 1) + 4 : 0;
+      if (tagW) this.text(hr.hpTag, w - 10 - this.textWidth(hpTxt) - 3, top + 11, '#8A8FA8', { align: 'right', s: 1 });
       if (hr.eta != null && !hr.dead && !hr.burning) {
         // 바닥 예측: 이름 줄에 남은 시간 (빨간 모래시계 느낌으로 깜빡임)
         const left = Math.max(0, hr.eta - (Date.now() - (hr.etaAt || Date.now())));
         const m = Math.round(left / 60000);
         const txt = m >= 60 ? `OUT ${Math.floor(m / 60)}H${String(m % 60).padStart(2, '0')}` : `OUT ${m}M`;
         const warn = m < 30 && Math.floor(this.time * 3) % 2;
-        this.text(txt, w - 10 - this.textWidth(hpTxt) - 8, top + 6, warn ? '#FFD166' : '#FF6B6B', { align: 'right', s: 1 });
+        this.text(txt, w - 10 - this.textWidth(hpTxt) - 8 - tagW, top + 6, warn ? '#FFD166' : '#FF6B6B', { align: 'right', s: 1 });
       }
       if (hr.burning && !hr.dead) {
         const flick = Math.floor(this.time * 8) % 2;
-        this.text('BURN X2', w - 10 - this.textWidth(hpTxt) - 8, top + 6, flick ? '#FF9F1C' : '#FFD166', { align: 'right', s: 1 });
+        this.text('BURN X2', w - 10 - this.textWidth(hpTxt) - 8 - tagW, top + 6, flick ? '#FF9F1C' : '#FFD166', { align: 'right', s: 1 });
       }
       // 하트 + HP바 (테두리 있는 칸 바)
       // 이름 줄과 HP바 사이를 띄움 (글자 높이 10 + 여백 5)
@@ -677,7 +682,8 @@
         this.ctx.globalAlpha = Math.max(0, p.life / p.max);
         if (p.heart) this.blit(HEART, p.x, p.y, { '#': p.color }, 1);
         else if (p.drop) this.px(p.x, p.y, 2, 4, p.color);
-        else this.px(p.x, p.y, p.ember ? 2 : PX, p.ember ? 2 : PX, p.color);
+        else if (p.bit) this.text(p.bit, p.x, p.y, p.color, { s: 1 });
+        else { const sz = p.size || (p.ember ? 2 : PX); this.px(p.x, p.y, sz, sz, p.color); }
       }
       this.ctx.globalAlpha = 1;
 
@@ -690,9 +696,146 @@
       if (hr.alert || hr.question) this.drawBubble(heroX + 10 * PX, ground - 17 * PX, hr.alert ? '!' : '?', hr.alert ? '#FF4D5A' : '#8A8FA8');
     }
 
-    heroBody(hr, ox, oy, pal, face) {
-      this.blit(hr.skin.grid, ox, oy, pal);
-      this.dots(hr.skin.faceNoMouth ? face.filter(([, y]) => y !== 9) : face, ox, oy, pal);
+    heroBody(hr, ox, oy, pal, face, mode) {
+      const sk = hr.skin;
+      const ex = sk.extras || [];
+      if (sk.fx && sk.fx.afterimage && (hr.swingT > 0 || hr.shots.length)) {
+        // 공격하는 순간 몸 뒤로 남는 푸른 잔상
+        sk._ghost = sk._ghost || Object.fromEntries([...new Set(sk.grid.join(''))].filter((c) => c !== '.').map((c) => [c, '#9AA8FF']));
+        this.ctx.globalAlpha = 0.16; this.blit(sk.grid, ox - 3 * PX, oy, sk._ghost);
+        this.ctx.globalAlpha = 0.3; this.blit(sk.grid, ox - 2 * PX, oy, sk._ghost);
+        this.ctx.globalAlpha = 1;
+      }
+      if (ex.length) this.extrasBack(hr, ox, oy, ex);
+      this.blit(sk.grid, ox, oy, pal);
+      if (sk.face) face = this.styleFace(face, mode, sk.face);
+      this.dots(sk.faceNoMouth ? face.filter(([, y]) => y !== 9) : face, ox, oy, pal);
+      if (ex.length) this.extrasFront(hr, ox, oy, ex);
+      if (sk.fx && sk.fx.glitch) this.glitch(hr, ox, oy);
+    }
+
+    // 팩이 정한 얼굴 꾸밈 (face): eyeColor(빛나는 눈) · brows('angry') · mouth('fang') · visor({ color }) 로 기본 얼굴을 바꾼다
+    styleFace(base, mode, fc) {
+      const awake = mode !== 'rest' && mode !== 'blink';
+      let out = base;
+      if (fc.visor && awake) {
+        // 눈 자리를 가로 띠(바이저)로: 스캔하는 빛이 좌우로 움직인다
+        const col = mode === 'hit' ? '#FF4D5A' : mode === 'tired' ? '#7A8194' : fc.visor.color || '#22E6FF';
+        const shade = darken(col.startsWith('#') ? col : '#22E6FF', 0.55);
+        out = out.filter(([x, y, c]) => !(c === 'o' && (y <= 8 || (y === 9 && x !== 7 && x !== 8))));
+        for (let x = 3; x <= 10; x++) out = out.concat([[x, 7, col], [x, 8, shade]]);
+        out.push([3 + (Math.floor(this.time * 8) % 8), 7, '#FFFFFF']);
+      } else if (fc.eyeColor && (awake || fc.colorAlways)) {
+        out = out.map(([x, y, c]) => (c === 'o' && y <= 8 ? [x, y, fc.eyeColor] : [x, y, c]));
+      }
+      if (fc.eyepatch && awake) {
+        // 왼쪽 눈에 안대: 눈을 지우고 검은 천과 끈
+        out = out.filter(([x, y, c]) => !(c === 'o' && x <= 7 && y <= 8)).concat([[5, 7, 'o'], [6, 7, 'o'], [5, 8, 'o'], [6, 8, 'o'], [4, 6, 'o'], [3, 7, 'o']]);
+      }
+      if ((fc.eyes === 'closed' || fc.eyes === 'slant') && awake && mode !== 'hit') {
+        // closed: 온화하게 감은 눈 / slant: 눈꼬리가 올라간 가는 눈매
+        out = out.filter(([, y, c]) => !(c === 'o' && y <= 8)).concat(fc.eyes === 'closed' ? [[5, 8, 'o'], [6, 8, 'o'], [8, 8, 'o'], [9, 8, 'o']] : [[5, 7, 'o'], [6, 8, 'o'], [8, 8, 'o'], [9, 7, 'o']]);
+      }
+      if (fc.mouthColor && (awake || fc.colorAlways)) out = out.map(([x, y, c]) => (c === 'o' && y === 9 ? [x, y, fc.mouthColor] : [x, y, c]));
+      if (fc.cheeks === false) out = out.filter(([, , c]) => c !== CHEEK);
+      if (fc.mouth === 'mustache' && awake && mode !== 'hit') out = out.concat([[5, 9, 'o'], [6, 9, 'o'], [9, 9, 'o'], [10, 9, 'o'], [4, 8, 'o']]);
+      if (fc.scar && awake) out = out.concat([[4, 7, '#B03A2E'], [4, 8, '#B03A2E'], [5, 9, '#B03A2E']]);
+      if (fc.warpaint && awake) out = out.concat([[10, 7, '#C0392B'], [10, 8, '#C0392B'], [9, 6, '#C0392B']]);
+      if (fc.brows === 'angry' && awake) out = out.concat([[4, 6, 'o'], [5, 6, 'o'], [9, 6, 'o'], [10, 6, 'o']]);
+      if (fc.mouth === 'fang' && awake && mode !== 'hit' && mode !== 'tired') {
+        out = out.filter(([, y, c]) => !(y === 9 && c === 'o')).concat([[6, 9, 'o'], [7, 9, 'o'], [8, 9, 'o'], [9, 9, 'o'], [6, 10, '#FFFFFF'], [9, 10, '#FFFFFF']]);
+      }
+      return out;
+    }
+
+    // 몸 뒤에 그리는 덧붙임: tail(끝이 화살촉인 꼬리) · scarf(서비스 색 스카프) · headband(흰 머리띠 꼬리)
+    extrasBack(hr, ox, oy, ex) {
+      const wave = Math.sin(hr.time * (hr.busy ? 9 : 3));
+      const step = (v) => (v > 0.4 ? 1 : v < -0.4 ? -1 : 0);
+      if (ex.includes('datastream')) {
+        // 몸 주변에서 위로 떠오르는 0과 1
+        for (let i = 0; i < 5; i++) {
+          const ph = (hr.time * 0.7 + i / 5) % 1;
+          this.ctx.globalAlpha = 0.9 * (1 - ph);
+          this.text(Math.floor(hr.time * 3 + i) % 2 ? '1' : '0', ox + (1 + i * 2.2) * PX, oy + (11 - ph * 13) * PX, i % 2 ? '#3DFF7A' : '#22E6FF', { s: 1 });
+        }
+        this.ctx.globalAlpha = 1;
+      }
+      if (ex.includes('scarf')) {
+        const c = hr.color, C = darken(hr.color, 0.65);
+        const y2 = 4 + step(wave), y3 = y2 + step(wave * 1.3);
+        this.dots([[-1, 4, c], [-2, y2, C], [-3, y3, c], [-1, 5, C], [-2, y2 + 1, c]], ox, oy, {});
+      }
+      if (ex.includes('headband')) {
+        const y2 = 5 + step(wave), y3 = y2 + step(wave * 1.3);
+        this.dots([[-1, 5, '#F4F6FF'], [-2, y2, '#DDE3F0'], [-3, y3 + 1, '#F4F6FF']], ox, oy, {});
+      }
+      if (ex.includes('tail')) {
+        const rate = hr.busy ? 7 : 2.4;
+        const pts = [];
+        // 용사가 화면 왼쪽 끝에 붙어 있어서 몸 왼쪽으로는 3칸까지만 (그 밖은 잘림)
+        for (let i = 0; i < 2; i++) pts.push([-1 - i, 10 + Math.round(Math.sin(hr.time * rate - i * 0.9)), '#B23A34']);
+        const ty = pts[1][1] + Math.round(Math.sin(hr.time * rate - 1.8));
+        pts.push([-3, ty - 1, '#FF5A4A'], [-3, ty, '#FF5A4A'], [-3, ty + 1, '#FF5A4A']);
+        this.dots(pts, ox, oy, {});
+      }
+    }
+
+    // 몸 앞에 그리는 덧붙임: hornFlames(뿔 끝 불꽃) · headset(헤드셋) · halo(머리 위 후광)
+    extrasFront(hr, ox, oy, ex) {
+      const t = hr.time;
+      if (ex.includes('hook')) this.dots([[-1, 9, '#C9D2E3'], [-2, 9, '#C9D2E3'], [-2, 10, '#C9D2E3'], [-1, 11, '#E8EEF8']], ox, oy, {});
+      if (ex.includes('drawstrings')) this.dots([[4, 10, '#F4F6FF'], [4, 11, '#F4F6FF'], [7, 10, '#F4F6FF'], [7, 11, '#F4F6FF']], ox, oy, {});
+      if (ex.includes('halo')) {
+        this.ctx.globalAlpha = 0.55 + 0.45 * Math.sin(t * 2.5);
+        this.dots([[4, -2, '#FFF0A8'], [5, -2, '#FFE066'], [6, -2, '#FFE066'], [7, -2, '#FFF0A8'], [3, -1, '#FFE066'], [8, -1, '#FFE066']], ox, oy, {});
+        this.ctx.globalAlpha = 1;
+      }
+      if (ex.includes('hornFlames')) {
+        const f = Math.floor(t * (hr.busy ? 12 : 6)) % 2;
+        const flame = (x0) => [[x0, -1, f ? '#FF9F1C' : '#FFD166'], [x0 + 1, -1, f ? '#FFD166' : '#FF9F1C'], ...(hr.busy ? [[x0 + (f ? 0 : 1), -2, '#FF5A1F']] : [])];
+        this.dots([...flame(2), ...flame(8)], ox, oy, {});
+      }
+      if (ex.includes('headset')) {
+        const on = Math.floor(t * 3) % 2;
+        this.dots([[0, 4, on ? '#22E6FF' : '#0E6F80'], [0, 5, '#3A3F5E'], [11, 4, on ? '#0E6F80' : '#22E6FF'], [11, 5, '#3A3F5E'], [11, 6, '#3A3F5E'], [11, 7, '#3A3F5E']], ox, oy, {});
+      }
+    }
+
+    // 가끔 몸이 지직거리는 글리치 (fx.glitch): 이미 그린 몸의 가로 띠를 어긋나게 다시 복사
+    glitch(hr, ox, oy) {
+      if (hr.time % 4.3 > 0.16) return;
+      const { X, Y, S } = this.cell(ox, oy, PX);
+      const T = this.T, ctx = this.ctx, shift = Math.max(2, Math.round(2 * T));
+      ctx.drawImage(this.c, X, Y + 3 * S, 12 * S, 3 * S, X + shift, Y + 3 * S, 12 * S, 3 * S);
+      ctx.drawImage(this.c, X, Y + 8 * S, 12 * S, 3 * S, X - shift, Y + 8 * S, 12 * S, 3 * S);
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = '#22E6FF'; ctx.fillRect(X + 12 * S + shift, Y + 3 * S, 2, 3 * S);
+      ctx.fillStyle = '#FF2BD6'; ctx.fillRect(X - shift - 2, Y + 8 * S, 2, 3 * S);
+      ctx.globalAlpha = 1;
+    }
+
+    // 격파 연출 (fx.kill): fire(위로 솟는 불꽃) · bits(흩어지는 0과 1). 팩에 없으면 false → 기본 연출
+    killBurst(h, x, y, e) {
+      const k = h.skin && h.skin.fx && h.skin.fx.kill;
+      if (!k) return false;
+      const cols = k.colors && k.colors.length ? k.colors : [e.color];
+      if (k.kind === 'fire') {
+        for (let i = 0; i < 10; i++) h.parts.push({ x, y, vx: rand(-25, 45), vy: rand(-75, -25), life: 0.7, max: 0.7, color: cols[i % cols.length], grav: -30 });
+      } else if (k.kind === 'bits') {
+        for (let i = 0; i < 9; i++) h.parts.push({ x, y, vx: rand(-40, 75), vy: rand(-55, 20), life: 0.8, max: 0.8, color: cols[i % cols.length], bit: Math.random() < 0.5 ? '0' : '1', grav: 0 });
+      } else if (k.kind === 'cross') {
+        // 십자 모양으로 퍼지는 성스러운 빛
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let i = 1; i <= 2; i++) h.parts.push({ x: x + dx * i * 5, y: y + dy * i * 5, vx: dx * 35, vy: dy * 35, life: 0.55, max: 0.55, color: i === 1 ? '#FFFFFF' : cols[0], grav: 0 });
+        h.parts.push({ x, y, vx: 0, vy: 0, life: 0.35, max: 0.35, color: '#FFFFFF', grav: 0, size: 5 });
+      } else if (k.kind === 'smoke') {
+        // 연막: 커다란 네모 연기가 피어올라 사라짐
+        for (let i = 0; i < 7; i++) h.parts.push({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-20, 20), vy: rand(-35, -10), life: 0.7, max: 0.7, color: cols[i % cols.length], grav: -8, size: 5 + (i % 2) * 2 });
+      } else if (k.kind === 'petals') {
+        // 벚꽃 잎이 흩날리다 떨어짐
+        for (let i = 0; i < 9; i++) h.parts.push({ x, y, vx: rand(15, 55), vy: rand(-45, -10), life: 1.1, max: 1.1, color: cols[i % cols.length], grav: 25, size: 2 });
+      } else return false;
+      return true;
     }
 
     faceFor(mode) {
@@ -741,7 +884,7 @@
       const step = hr.busy && !hit ? Math.floor(hr.time * 6) % 2 : 0;
       this.dots([[2, 12, 'o'], [3, 12, 'o'], [4, 12, 'o'], [2, 13, 'o'], [3, 13, 'o'], [4, 13, 'o']], ox - step * PX, oy, hr.P);
       this.dots([[7, 12, 'o'], [8, 12, 'o'], [9, 12, 'o'], [7, 13, 'o'], [8, 13, 'o'], [9, 13, 'o']], ox + step * PX, oy, hr.P);
-      this.cape(hr, ox, oy, hr.busy);
+      if (!hr.skin.noCape) this.cape(hr, ox, oy, hr.busy);
 
       let mode = 'fight';
       if (!hr.busy) mode = 'normal';
@@ -750,7 +893,7 @@
       if (potion >= 0) mode = potion > 0.55 ? 'happy' : 'normal';
       if (hr.jumpT > 0) mode = 'happy';
       if (hit || hr.angryT > 0) mode = 'hit';
-      this.heroBody(hr, ox, oy, hit || hr.angryT > 0 ? hr.PH : hr.P, this.faceFor(mode));
+      this.heroBody(hr, ox, oy, hit || hr.angryT > 0 ? hr.PH : hr.P, this.faceFor(mode), mode);
 
       const hx = ox + 11 * PX + 1, hy = oy + 9 * PX;
       let a = -1.0;
@@ -759,7 +902,15 @@
         const k = 1 - hr.swingT / dur;
         a = -1.3 + k * 2.0;
         // 베는 궤적 (도트 호)
-        for (let t = -1.3; t < a; t += 0.18) this.px(hx + Math.cos(t) * 8 * PX, hy + Math.sin(t) * 8 * PX, 2, 2, 'rgba(255,255,255,0.45)');
+        if (hr.skin.fx && hr.skin.fx.slash) {
+          // 검광: 반지름이 큰 두 겹 호, 칼끝 쪽일수록 밝게
+          for (let t = -1.3; t < a; t += 0.1) {
+            this.ctx.globalAlpha = 0.15 + 0.75 * ((t + 1.3) / Math.max(0.1, a + 1.3));
+            this.px(hx + Math.cos(t) * 11 * PX, hy + Math.sin(t) * 11 * PX, 3, 3, '#E8F4FF');
+            this.px(hx + Math.cos(t) * 12.5 * PX, hy + Math.sin(t) * 12.5 * PX, 2, 2, '#9EC8FF');
+          }
+          this.ctx.globalAlpha = 1;
+        } else for (let t = -1.3; t < a; t += 0.18) this.px(hx + Math.cos(t) * 8 * PX, hy + Math.sin(t) * 8 * PX, 2, 2, 'rgba(255,255,255,0.45)');
       } else if (!hr.busy) a = -1.35;
       if (hit) a = -2.0;
       if (potion >= 0) a = 1.2;
@@ -778,6 +929,44 @@
       const casting = hr.swingT > 0;
       if (w === 'sword') return this.sword(hx, hy, a);
       if (w === 'katana') return this.katana(hx, hy, a);
+      if (w === 'trident') return this.trident(hx, hy, a);
+      if (w === 'hammer') return this.hammer(hx, hy, a);
+      if (w === 'ladle') return this.ladle(hx, hy, a);
+      if (w === 'axe') return this.axe(hx, hy, a);
+      if (w === 'raygun') {
+        // 외계인 광선총: 초록 금속 몸통과 발광 총구 (쏠 때 총구가 번쩍)
+        const y0 = hy - 2 * PX;
+        this.dots([[0, 0, '#2C6B5A'], [1, 0, '#3F8F7A'], [2, 0, '#3F8F7A'], [3, 0, '#6EE7B7'], [4, 0, '#6EE7B7'], [1, -1, '#6EE7B7'], [0, 1, '#2C6B5A'], [1, 1, '#3F8F7A'], [2, 1, '#2C6B5A'], ...(casting ? [[5, 0, '#FFFFFF'], [6, 0, '#B8FFE0'], [5, -1, '#B8FFE0'], [5, 1, '#B8FFE0']] : [[5, 0, '#6EE7B7']])], hx, y0, {});
+        return;
+      }
+      if (w === 'claw') {
+        // 고양이 발톱: 손끝에서 세 갈래로 튀어나온 하얀 발톱
+        const y0 = hy - 2 * PX;
+        this.dots([[0, 0, '#FFFFFF'], [1, -1, '#FFFFFF'], [2, -2, '#FFFFFF'], [0, -1, '#FFD9E6'], [1, -2, '#FFD9E6'], ...(casting ? [[3, -3, '#FF9DB8'], [3, -1, '#FF9DB8']] : [])], hx, y0, {});
+        return;
+      }
+      if (w === 'keyboard') {
+        // 키보드: 키캡이 무지개색으로 돌아가며 빛남
+        const cols = ['#FF5C6A', '#FFB347', '#FFE066', '#3DFF7A', '#22E6FF', '#B98CFF'];
+        const f = Math.floor(hr.time * 6), y0 = hy - 3 * PX;
+        const row = [];
+        for (let i = 0; i < 6; i++) row.push([i, 0, cols[(i + f) % 6]], [i, 1, i % 2 ? '#3A3F5E' : '#2A2E4A']);
+        this.dots([...row, ...(casting ? [[6, 0, '#FFFFFF']] : [])], hx - PX, y0, {});
+        return;
+      }
+      if (w === 'pistol') {
+        // 부싯돌 권총: 강철 총신과 갈색 손잡이 (쏠 때 총구 불꽃)
+        const y0 = hy - 2 * PX;
+        this.dots([[0, 0, '#8A8FA8'], [1, 0, '#B8C2D8'], [2, 0, '#B8C2D8'], [3, 0, '#B8C2D8'], [4, 0, '#DDE3F0'], [0, 1, '#8B5A2B'], [1, 1, '#8B5A2B'], [0, 2, '#6B4A2A'], ...(casting ? [[5, 0, '#FFFFFF'], [6, 0, '#FFE066'], [5, -1, '#FFB347'], [5, 1, '#FFB347'], [7, -1, '#9AA3B8']] : [])], hx, y0, {});
+        return;
+      }
+      if (w === 'terminal') {
+        // 휴대용 단말기: 화면이 켜져 있고, 쏠 때 하얗게 번쩍
+        const top = lowered ? hy - 1 * PX : hy - 4 * PX;
+        const scr = casting ? '#FFFFFF' : '#22E6FF';
+        this.dots([[0, 0, '#3A3F5E'], [1, 0, '#3A3F5E'], [2, 0, '#3A3F5E'], [3, 0, '#3A3F5E'], [0, 1, '#22E6FF'], [1, 1, scr], [2, 1, scr], [3, 1, '#22E6FF'], [0, 2, '#22E6FF'], [1, 2, '#3DFF7A'], [2, 2, scr], [3, 2, '#22E6FF'], [0, 3, '#8A8FA8'], [1, 3, '#8A8FA8'], [2, 3, '#8A8FA8'], [3, 3, '#8A8FA8']], hx - PX, top, {});
+        return;
+      }
       if (w === 'staff') {
         // 지팡이: 손에 세워 들고, 쏠 때 구슬이 번쩍
         const top = lowered ? hy - 2 * PX : hy - 6 * PX;
@@ -799,6 +988,37 @@
       }
     }
 
+    // 삼지창: 자루 끝에 갈래 세 개
+    trident(hx, hy, a, len = 9) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#4A2160');
+      for (let k = -1; k <= 1; k++) this.px(hx + cx * len * PX + gx * k * PX, hy + sy * len * PX + gy * k * PX, PX, PX, '#FF6A4A');
+      for (let k = -1; k <= 1; k++) this.px(hx + cx * (len + 1) * PX + gx * k * PX, hy + sy * (len + 1) * PX + gy * k * PX, PX, PX, k === 0 ? '#FFFFFF' : '#FF6A4A');
+    }
+
+    // 국자: 은색 자루 끝에 수프를 담는 오목한 머리
+    ladle(hx, hy, a, len = 8) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#9AA3B8');
+      for (const k of [-1, 1]) this.px(hx + cx * (len + 1) * PX + gx * k * PX, hy + sy * (len + 1) * PX + gy * k * PX, PX, PX, '#C9D2E3');
+      for (const k of [-1, 0, 1]) this.px(hx + cx * (len + 2) * PX + gx * k * PX, hy + sy * (len + 2) * PX + gy * k * PX, PX, PX, k === 0 ? '#D96B3A' : '#C9D2E3');
+    }
+
+    // 도끼: 갈색 자루 끝에 한쪽으로 크게 벌어진 날
+    axe(hx, hy, a, len = 7) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#8B5A2B');
+      this.px(hx + cx * len * PX - gx * PX, hy + sy * len * PX - gy * PX, PX, PX, '#7A8398');
+      for (let i = len - 1; i <= len + 1; i++) for (const k of [1, 2]) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, k === 2 ? '#F2F6FF' : '#B8C2D8');
+    }
+
+    // 전투 망치: 자루 끝에 묵직한 머리
+    hammer(hx, hy, a, len = 6) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#8B5A2B');
+      for (let i = len; i <= len + 1; i++) for (let k = -1; k <= 1; k++) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, k === -1 || i === len + 1 ? '#DDE3F0' : '#9AA3B8');
+    }
+
     katana(hx, hy, a) {
       const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
       for (let k = -1; k <= 1; k++) this.px(hx + gx * k * 2, hy + gy * k * 2, 2, 2, '#2E2B3A');
@@ -810,6 +1030,20 @@
       const w = hr.skin.weapon || 'sword';
       if (w === 'sword') return this.sword(x, ground - 1, -Math.PI / 2, 8);
       if (w === 'katana') return this.katana(x, ground - 1, -Math.PI / 2);
+      if (w === 'trident') return this.trident(x, ground - 1, -Math.PI / 2, 9);
+      if (w === 'ladle') return this.ladle(x, ground - 1, -Math.PI / 2, 8);
+      if (w === 'axe') return this.axe(x, ground - 1, -Math.PI / 2, 7);
+      if (w === 'raygun') { this.dots([[0, 0, '#2C6B5A'], [1, 0, '#3F8F7A'], [2, 0, '#3F8F7A'], [3, 0, '#6EE7B7'], [4, 0, '#6EE7B7'], [0, 1, '#2C6B5A'], [1, 1, '#3F8F7A']], x - PX, ground - 3 * PX, {}); return; }
+      if (w === 'claw') return;
+      if (w === 'keyboard') { const cols = ['#FF5C6A', '#FFB347', '#FFE066', '#3DFF7A', '#22E6FF', '#B98CFF']; const f = Math.floor(this.time * 3); const row = []; for (let i = 0; i < 6; i++) row.push([i, 0, cols[(i + f) % 6]], [i, 1, '#2A2E4A']); this.dots(row, x - 2 * PX, ground - 2 * PX, {}); return; }
+      if (w === 'pistol') { this.dots([[0, 0, '#8A8FA8'], [1, 0, '#B8C2D8'], [2, 0, '#B8C2D8'], [3, 0, '#B8C2D8'], [4, 0, '#DDE3F0'], [0, 1, '#8B5A2B'], [1, 1, '#8B5A2B']], x - PX, ground - 3 * PX, {}); return; }
+      if (w === 'hammer') return this.hammer(x, ground - 1, -Math.PI / 2, 6);
+      if (w === 'terminal') {
+        // 바닥에 펼쳐 둔 단말기 (화면이 은은하게 깜빡임)
+        const blink = Math.floor(this.time * 2) % 2 ? '#22E6FF' : '#3DFF7A';
+        this.dots([[0, 0, '#3A3F5E'], [1, 0, '#3A3F5E'], [2, 0, '#3A3F5E'], [3, 0, '#3A3F5E'], [0, 1, '#22E6FF'], [1, 1, blink], [2, 1, '#22E6FF'], [3, 1, '#22E6FF'], [0, 2, '#8A8FA8'], [1, 2, '#8A8FA8'], [2, 2, '#8A8FA8'], [3, 2, '#8A8FA8']], x - PX, ground - 3 * PX, {});
+        return;
+      }
       if (w === 'staff') {
         for (let y = ground - 9 * PX; y <= ground; y += PX) this.px(x, y, PX, PX, '#8B5A2B');
         const orb = lighten(hr.color, 0.35);
@@ -830,6 +1064,29 @@
           this.px(sh.x - 8, sh.y, 8, 2, c);
           this.ctx.globalAlpha = 1;
           this.dots([[0, -1, c], [-1, 0, c], [0, 0, '#FFFFFF'], [1, 0, c], [0, 1, c]], sh.x, sh.y, {}, 2);
+        } else if (sh.kind === 'raygun') {
+          // 레이저빔: 넓은 초록 광선 위에 밝은 심지
+          this.ctx.globalAlpha = 0.35; this.px(sh.x - 30, sh.y - 1, 30, 4, '#5BE3A8'); this.ctx.globalAlpha = 1;
+          this.px(sh.x - 24, sh.y, 24, 2, '#B8FFE0'); this.px(sh.x - 8, sh.y, 8, 2, '#FFFFFF');
+        } else if (sh.kind === 'claw') {
+          // 할퀸 자국: 세 줄의 비스듬한 발톱 궤적이 날아감
+          for (const k of [-1, 0, 1]) for (let j = 0; j < 4; j++) this.px(sh.x - 6 + j * 2, sh.y - 5 + k * 5 + j * 2, 2, 2, k === 0 ? '#FFFFFF' : '#FFD9E6');
+        } else if (sh.kind === 'keyboard') {
+          // 키캡 탄: 글자가 새겨진 키캡
+          const x = sh.x - 4, y = sh.y - 4;
+          this.px(x, y + 1, 9, 8, '#2A2E4A'); this.px(x, y, 9, 8, '#DDE3F0'); this.px(x + 1, y + 1, 7, 6, '#F4F6FF');
+          this.text(sh.letter || 'K', x + 4.5, y + 2, '#2A2E4A', { s: 1, align: 'center' });
+        } else if (sh.kind === 'pistol') {
+          // 총알: 짧은 꼬리와 노란 탄두
+          this.ctx.globalAlpha = 0.4; this.px(sh.x - 16, sh.y, 16, 1, '#DDE3F0'); this.ctx.globalAlpha = 1;
+          this.px(sh.x, sh.y - 1, 4, 3, '#FFE9A8'); this.px(sh.x + 1, sh.y, 2, 1, '#FFFFFF');
+        } else if (sh.kind === 'terminal') {
+          // 코드 조각 탄: 시안 꼬리와 초록 머리, 중간에 0/1 비트
+          this.ctx.globalAlpha = 0.4;
+          this.px(sh.x - 12, sh.y, 12, 2, '#22E6FF');
+          this.ctx.globalAlpha = 1;
+          if (Math.floor(sh.t * 30) % 2) this.px(sh.x - 8, sh.y - 3, 2, 2, '#3DFF7A'); else this.px(sh.x - 5, sh.y + 3, 2, 2, '#3DFF7A');
+          this.dots([[0, 0, '#FFFFFF'], [1, 0, '#3DFF7A'], [0, 1, '#3DFF7A'], [1, 1, '#22E6FF']], sh.x, sh.y - 1, {}, 2);
         } else if (sh.kind === 'bow') {
           this.px(sh.x - 10, sh.y, 10, 1, '#E8D2A6');
           this.dots([[0, -1, BLADE], [1, 0, BLADE], [0, 1, BLADE], [0, 0, BLADE]], sh.x, sh.y - 1, {}, 2);
@@ -858,13 +1115,13 @@
       this.weaponRest(hr, ox + 13 * PX, ground);
       this.px(ox + PX, ground, 12 * PX, 2, 'rgba(0,0,0,0.4)');
       // 망토를 깔고 앉음
-      this.dots([[-1, 11, darken(hr.color, 0.65)], [0, 11, hr.color], [1, 11, hr.color]], ox, oy, {});
+      if (!hr.skin.noCape) this.dots([[-1, 11, darken(hr.color, 0.65)], [0, 11, hr.color], [1, 11, hr.color]], ox, oy, {});
       // 앞으로 뻗은 발
       this.dots([[9, 11, 'o'], [10, 11, 'o'], [11, 11, 'o'], [10, 10, 'o'], [11, 10, 'o']], ox, oy, hr.P);
       const nod = Math.sin(hr.time * 1.3) > 0.85 ? PX : 0;
       const hop = hr.jumpT > 0 ? -Math.round(Math.sin((1 - hr.jumpT / 0.45) * Math.PI) * 3) * PX : 0;
       const awake = hr.jumpT > 0 || hr.angryT > 0;
-      this.heroBody(hr, ox + (hr.angryT > 0 ? (Math.floor(this.time * 30) % 2 ? PX : -PX) : 0), oy + (awake ? hop : nod), hr.angryT > 0 ? hr.PH : hr.P, this.faceFor(hr.angryT > 0 ? 'hit' : awake ? 'fight' : 'rest'));
+      this.heroBody(hr, ox + (hr.angryT > 0 ? (Math.floor(this.time * 30) % 2 ? PX : -PX) : 0), oy + (awake ? hop : nod), hr.angryT > 0 ? hr.PH : hr.P, this.faceFor(hr.angryT > 0 ? 'hit' : awake ? 'fight' : 'rest'), hr.angryT > 0 ? 'hit' : awake ? 'fight' : 'rest');
 
       // 휴식 소품 (모닥불 · 커피 · 랜턴 … 휴식 팩)
       const rt = this.restTheme;
