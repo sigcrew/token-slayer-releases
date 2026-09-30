@@ -199,12 +199,17 @@
       this.time = 0;
       this.enemyTheme = DEFAULT_ENEMIES;
       this.restTheme = DEFAULT_REST;
+      this.backdrop = null;
       this.skins = {};
       this.resize();
     }
 
     // 꾸미기: { skins: { 서비스id: 용사팩 }, enemies: 적팩, rest: 휴식팩 }
     setTheme(t) {
+      if (t.backdrop !== undefined) {
+        const b = t.backdrop;
+        this.backdrop = b && !b.plain && b.sky && window.Backdrop ? new window.Backdrop(b) : null;
+      }
       if (t.enemies !== undefined) this.enemyTheme = t.enemies && t.enemies.texts ? t.enemies : DEFAULT_ENEMIES;
       if (t.rest !== undefined) this.restTheme = t.rest && t.rest.frames ? t.rest : DEFAULT_REST;
       if (t.skins) {
@@ -361,7 +366,15 @@
 
     update(dt) {
       this.time += dt;
+      if (this.backdrop) this.backdrop.update(dt, this.backdropGeom());
       this.heroes.forEach((h, i) => this.updateHero(h, i, dt));
+    }
+
+    backdropGeom() {
+      return {
+        w: this.w, h: this.h, T: this.T,
+        lanes: this.heroes.map((_, i) => ({ top: this.laneTop(i), ground: this.laneTop(i) + LANE_H - 7, bottom: this.laneTop(i) + LANE_H })),
+      };
     }
 
     updateHero(h, i, dt) {
@@ -579,6 +592,7 @@
       ctx.globalAlpha = 0.94;
       this.frameBox(0, 0, w, h);
       ctx.globalAlpha = 1;
+      if (this.backdrop) this.backdrop.draw(ctx, this.backdropGeom());
       this.heroes.forEach((hero, i) => {
         if (i > 0) for (let x = 10; x < w - 10; x += 4) this.px(x, this.laneTop(i), 2, 1, 'rgba(255,255,255,0.10)');
         this.drawLane(hero, i);
