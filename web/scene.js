@@ -1233,7 +1233,7 @@
         if (dn.drool) {
           const t = (hr.time * 0.9) % 1;
           this.ctx.globalAlpha = 1 - t;
-          this.dotsHi([[dn.drool[0], dn.drool[1] + Math.floor(t * 7), '#9ED8FF'], [dn.drool[0], dn.drool[1] + 1 + Math.floor(t * 7), '#CDEBFF']], ox, oy, {}, PX, frame.length);
+          this.dotsHi([[dn.drool[0], dn.drool[1] + Math.floor(t * 7 * frame.length / 48), '#9ED8FF'], [dn.drool[0], dn.drool[1] + 1 + Math.floor(t * 7 * frame.length / 48), '#CDEBFF']], ox, oy, {}, PX, frame.length);
           this.ctx.globalAlpha = 1;
         }
       } else {
