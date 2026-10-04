@@ -126,8 +126,18 @@
     fatal: ['BUG', '429', 'ERR'],
   };
   const DEFAULT_REST = { id: 'campfire', frames: FLAME.map((f) => [...f, 'BbbbB', '.BbB.']), palette: FIRE, glow: '#FF9F1C', embers: true };
-  const RANGED = { staff: true, bow: true, shuriken: true, terminal: true, raygun: true, claw: true, keyboard: true, pistol: true };
-  const SHOT_SPEED = { staff: 220, raygun: 520, pistol: 420 }; // 그 밖의 원거리 탄은 300
+  const RANGED = { staff: true, bow: true, shuriken: true, terminal: true, raygun: true, claw: true, keyboard: true, pistol: true, bone: true };
+  // 뼈다귀: 양 끝에 둥근 마디가 두 개씩 달린 하얀 뼈. 방향 4가지(가로 · \ · 세로 · /)로 돌려 가며 던진다
+  const BW = '#FFFFFF', BS = '#C9CFE0';
+  const boneCells = (pts) => pts.map(([x, y, shade]) => [x, y, shade ? BS : BW]);
+  const BONE = [
+    boneCells([[0, -1], [1, -1], [5, -1], [6, -1], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [0, 1, 1], [1, 1, 1], [5, 1, 1], [6, 1, 1]]),
+    boneCells([[0, 0], [1, 0], [0, 1], [1, 1, 1], [2, 2], [3, 2], [2, 3], [3, 3, 1], [4, 4], [5, 4], [4, 5], [5, 5, 1]]),
+    boneCells([[-1, 0], [-1, 1], [-1, 5], [-1, 6], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [1, 0, 1], [1, 1, 1], [1, 5, 1], [1, 6, 1]]),
+    boneCells([[4, 0], [5, 0], [4, 1], [5, 1, 1], [2, 2], [3, 2], [2, 3], [3, 3, 1], [0, 4], [1, 4], [0, 5], [1, 5, 1]]),
+  ];
+  const BONE_OFF = [[-3, 0], [-3, -3], [0, -3], [-3, -3]];
+  const SHOT_SPEED = { staff: 220, raygun: 520, pistol: 420, bone: 150 }; // 그 밖의 원거리 탄은 300
 
   function hex2rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
   const darken = (hex, f) => { const [r, g, b] = hex2rgb(hex); return `rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)})`; };
@@ -182,10 +192,15 @@
     pal() {
       const sp = this.skin.palette || {};
       this.P = { o: INK, w: BODY, s: SHADE, ...sp, c: this.color, C: darken(this.color, 0.65) };
+      // 고해상도 용사가 서비스 색(c · C)에 입히는 하이라이트 · 그림자 (ĉ ċ Ĉ Ċ)
+      const hx = (hex, f) => { const [r, g, b] = hex2rgb(hex); const m = (v) => Math.max(0, Math.min(255, Math.round(f >= 0 ? v + (255 - v) * f : v * (1 + f)))).toString(16).padStart(2, '0'); return `#${m(r)}${m(g)}${m(b)}`; };
+      const cc = this.color, CC = hx(this.color, -0.35);
+      Object.assign(this.P, { '\u0109': hx(cc, 0.3), '\u010B': hx(cc, -0.18), '\u0108': hx(CC, 0.3), '\u010A': hx(CC, -0.2) });
       // 맞았을 때: 몸과 장비를 붉게
       const tint = (hex) => { try { const [r, g, b] = hex2rgb(hex); return `rgb(${Math.min(255, r + 70)},${Math.round(g * 0.6)},${Math.round(b * 0.6)})`; } catch { return hex; } };
       this.PH = { ...this.P, w: '#FFC9C9', s: '#F09C9C' };
       for (const k of Object.keys(sp)) if (/^#/.test(sp[k])) this.PH[k] = tint(sp[k]);
+      for (const k of ['\u0109', '\u010B', '\u0108', '\u010A']) this.PH[k] = tint(this.P[k]);
     }
 
     get dead() { return this.hp != null && this.hp <= 0.5 && !this.enemies.some((e) => e.fatal); }
@@ -538,6 +553,33 @@
       for (const [x, y, c] of list) { ctx.fillStyle = pal[c] || c; ctx.fillRect(X + x * S, Y + y * S, S, S); }
     }
 
+    // 고해상도 용사(hires): 24×24 그리드를 12×12 용사와 같은 크기에 그린다 (칸 하나가 s/2)
+    blitHi(grid, ox, oy, pal, s = PX) {
+      const T = this.T, { ctx } = this;
+      const X = Math.round(Math.round(ox) * T), Y = Math.round(Math.round(oy) * T);
+      const step = (s * 12 * T) / grid.length;
+      const r = (v) => Math.round(v * step);
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          const col = pal[grid[y][x]];
+          if (!col) continue;
+          ctx.fillStyle = col;
+          ctx.fillRect(X + r(x), Y + r(y), Math.max(1, r(x + 1) - r(x)), Math.max(1, r(y + 1) - r(y)));
+        }
+      }
+    }
+
+    dotsHi(list, ox, oy, pal, s = PX, n = 24) {
+      const T = this.T, { ctx } = this;
+      const X = Math.round(Math.round(ox) * T), Y = Math.round(Math.round(oy) * T);
+      const step = (s * 12 * T) / n;
+      const r = (v) => Math.round(v * step);
+      for (const [x, y, c] of list) {
+        ctx.fillStyle = pal[c] || c;
+        ctx.fillRect(X + r(x), Y + r(y), Math.max(1, r(x + 1) - r(x)), Math.max(1, r(y + 1) - r(y)));
+      }
+    }
+
     blit(grid, ox, oy, pal, s = PX) {
       const { X, Y, S } = this.cell(ox, oy, s);
       const { ctx } = this;
@@ -699,7 +741,7 @@
     heroBody(hr, ox, oy, pal, face, mode) {
       const sk = hr.skin;
       const ex = sk.extras || [];
-      if (sk.fx && sk.fx.afterimage && (hr.swingT > 0 || hr.shots.length)) {
+      if (sk.fx && sk.fx.afterimage && !sk.hires && (hr.swingT > 0 || hr.shots.length)) {
         // 공격하는 순간 몸 뒤로 남는 푸른 잔상
         sk._ghost = sk._ghost || Object.fromEntries([...new Set(sk.grid.join(''))].filter((c) => c !== '.').map((c) => [c, '#9AA8FF']));
         this.ctx.globalAlpha = 0.16; this.blit(sk.grid, ox - 3 * PX, oy, sk._ghost);
@@ -707,6 +749,15 @@
         this.ctx.globalAlpha = 1;
       }
       if (ex.length) this.extrasBack(hr, ox, oy, ex);
+      if (sk.hires) {
+        // 고해상도 용사: 몸은 grid, 표정은 팩의 faces[모드] (없으면 fight)
+        this.blitHi(sk.grid, ox, oy, pal);
+        const fl = sk.faces || {};
+        this.dotsHi(fl[mode] || fl.fight || [], ox, oy, pal, PX, sk.grid.length);
+        if (ex.length) this.extrasFront(hr, ox, oy, ex);
+        if (sk.fx && sk.fx.glitch) this.glitch(hr, ox, oy);
+        return;
+      }
       this.blit(sk.grid, ox, oy, pal);
       if (sk.face) face = this.styleFace(face, mode, sk.face);
       this.dots(sk.faceNoMouth ? face.filter(([, y]) => y !== 9) : face, ox, oy, pal);
@@ -945,6 +996,12 @@
         this.dots([[0, 0, '#FFFFFF'], [1, -1, '#FFFFFF'], [2, -2, '#FFFFFF'], [0, -1, '#FFD9E6'], [1, -2, '#FFD9E6'], ...(casting ? [[3, -3, '#FF9DB8'], [3, -1, '#FF9DB8']] : [])], hx, y0, {});
         return;
       }
+      if (w === 'bone') {
+        // 뼈다귀: 손에 물고 앞으로 내밀고, 던질 때 한 칸 더 앞으로 번쩍
+        const y0 = hy - PX;
+        this.dots([...BONE[0], ...(casting ? [[7, 0, '#FFFFFF']] : [])], hx - (casting ? 0 : PX), y0, {});
+        return;
+      }
       if (w === 'keyboard') {
         // 키보드: 키캡이 무지개색으로 돌아가며 빛남
         const cols = ['#FF5C6A', '#FFB347', '#FFE066', '#3DFF7A', '#22E6FF', '#B98CFF'];
@@ -1035,6 +1092,7 @@
       if (w === 'axe') return this.axe(x, ground - 1, -Math.PI / 2, 7);
       if (w === 'raygun') { this.dots([[0, 0, '#2C6B5A'], [1, 0, '#3F8F7A'], [2, 0, '#3F8F7A'], [3, 0, '#6EE7B7'], [4, 0, '#6EE7B7'], [0, 1, '#2C6B5A'], [1, 1, '#3F8F7A']], x - PX, ground - 3 * PX, {}); return; }
       if (w === 'claw') return;
+      if (w === 'bone') { this.dots(BONE[0], x - 2 * PX, ground - 3 * PX, {}); return; }
       if (w === 'keyboard') { const cols = ['#FF5C6A', '#FFB347', '#FFE066', '#3DFF7A', '#22E6FF', '#B98CFF']; const f = Math.floor(this.time * 3); const row = []; for (let i = 0; i < 6; i++) row.push([i, 0, cols[(i + f) % 6]], [i, 1, '#2A2E4A']); this.dots(row, x - 2 * PX, ground - 2 * PX, {}); return; }
       if (w === 'pistol') { this.dots([[0, 0, '#8A8FA8'], [1, 0, '#B8C2D8'], [2, 0, '#B8C2D8'], [3, 0, '#B8C2D8'], [4, 0, '#DDE3F0'], [0, 1, '#8B5A2B'], [1, 1, '#8B5A2B']], x - PX, ground - 3 * PX, {}); return; }
       if (w === 'hammer') return this.hammer(x, ground - 1, -Math.PI / 2, 6);
@@ -1071,6 +1129,10 @@
         } else if (sh.kind === 'claw') {
           // 할퀸 자국: 세 줄의 비스듬한 발톱 궤적이 날아감
           for (const k of [-1, 0, 1]) for (let j = 0; j < 4; j++) this.px(sh.x - 6 + j * 2, sh.y - 5 + k * 5 + j * 2, 2, 2, k === 0 ? '#FFFFFF' : '#FFD9E6');
+        } else if (sh.kind === 'bone') {
+          // 뼈다귀: 빙글빙글 돌며 날아가고 하얀 꼬리가 남음
+          this.ctx.globalAlpha = 0.3; this.px(sh.x - 14, sh.y - 1, 14, 2, '#FFF6E0'); this.ctx.globalAlpha = 1;
+          { const k = Math.floor(sh.t * 8) % 4; this.dots(BONE[k], sh.x + BONE_OFF[k][0] * 2, sh.y + BONE_OFF[k][1] * 2, {}, 2); }
         } else if (sh.kind === 'keyboard') {
           // 키캡 탄: 글자가 새겨진 키캡
           const x = sh.x - 4, y = sh.y - 4;
@@ -1161,6 +1223,20 @@
 
     drawDead(hr, heroX, ground, top) {
       const { w } = this;
+      const dn = hr.skin.hires && hr.skin.down;
+      if (dn) {
+        // 동물 용사(down): 비석 대신 빈 밥그릇 앞에서 꼬리를 흔들며 밥을 기다린다 (리셋이 곧 밥)
+        const ox = heroX, oy = ground - 14 * PX;
+        const frame = dn.frames[Math.floor(hr.time * 3) % dn.frames.length];
+        this.blitHi(frame, ox, oy, hr.P);
+        this.dotsHi(dn.faces || [], ox, oy, hr.P, PX, frame.length);
+        if (dn.drool) {
+          const t = (hr.time * 0.9) % 1;
+          this.ctx.globalAlpha = 1 - t;
+          this.dotsHi([[dn.drool[0], dn.drool[1] + Math.floor(t * 7), '#9ED8FF'], [dn.drool[0], dn.drool[1] + 1 + Math.floor(t * 7), '#CDEBFF']], ox, oy, {}, PX, frame.length);
+          this.ctx.globalAlpha = 1;
+        }
+      } else {
       // 묘비 + 풀
       const tx = heroX + PX, ty = ground - 10 * PX + 1;
       this.blit(TOMB, tx, ty, { o: INK, g: '#A2ABBD', G: '#727C92' });
@@ -1173,16 +1249,17 @@
       this.ctx.globalAlpha = 0.85 - ((hr.time * 6) % 14) / 30;
       this.blit(GHOST, gx, gy, { w: '#EDEFFF', e: INK }, 2);
       this.ctx.globalAlpha = 1;
+      }
 
       // GAME OVER + 부활까지 남은 시간
       const cx = Math.round((heroX + 16 * PX + w) / 2) + 6;
       const blink = Math.floor(this.time * 2) % 2 === 0;
-      this.text('GAME OVER', cx, top + 26, blink ? '#FF4D5A' : '#D6323F', { align: 'center', outline: '#0B0C16' });
+      this.text(dn ? dn.label : 'GAME OVER', cx, top + 26, dn ? (blink ? '#FFD166' : '#FF9F1C') : blink ? '#FF4D5A' : '#D6323F', { align: 'center', outline: '#0B0C16' });
       if (hr.resetAt) {
         const left = Math.max(0, hr.resetAt - Date.now());
         const hh = Math.floor(left / 3600e3), mm = Math.floor((left % 3600e3) / 60e3), ss = Math.floor((left % 60e3) / 1e3);
         const t = hh >= 24 ? `${Math.floor(hh / 24)}D ${hh % 24}H` : `${hh}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
-        this.text(`RESPAWN ${t}`, cx, top + 39, '#8A8FA8', { align: 'center', s: 1 });
+        this.text(`${dn ? dn.respawn : 'RESPAWN'} ${t}`, cx, top + 39, '#8A8FA8', { align: 'center', s: 1 });
       }
     }
 
