@@ -305,13 +305,23 @@
     // 용사를 쓰다듬었을 때 반응
     poke(h) {
       const now = this.time;
-      h.pokes = h.pokes.filter((t) => now - t < 2).concat(now);
+      const mem = h.skin && h.skin.memory;
+      h.pokes = h.pokes.filter((t) => now - t < (mem ? 3 : 2)).concat(now);
       const i = this.heroes.indexOf(h);
       const ground = this.laneTop(i) + LANE_H - 7;
       const fx = 10 + 22 * PX, fy = ground - 22;
       const say = (text, color) => h.floaters.push({ text, x: fx, y: fy, life: 1.2, max: 1.2, color });
       if (h.dead) { say('BOO!', '#EDEFFF'); return 'boo'; }
-      if (h.pokes.length >= 5) {
+      if (mem) {
+        // 추억이 담긴 용사: 화내는 대신 몇 번(기본 5번) 연달아 누르면 사진 카드가 뜬다
+        if (h.pokes.length >= (mem.clicks || 5)) {
+          h.pokes = [];
+          h.jumpT = 0.6;
+          say('LOVE!', '#FF7AA8');
+          for (let k = 0; k < 8; k++) h.parts.push({ x: 10 + 6 * PX + rand(-14, 14), y: ground - 14 * PX, vx: rand(-30, 30), vy: rand(-70, -40), life: 1.1, max: 1.1, color: '#FF5C8A', heart: true, grav: 40 });
+          return 'memory';
+        }
+      } else if (h.pokes.length >= 5) {
         h.angryT = 1.2;
         h.pokes = [];
         say('STOP!', '#FF4D5A');
