@@ -433,7 +433,7 @@
       const ground = top + LANE_H - 7;
       const heroX = 10;
       const wpn = h.skin.weapon || 'sword';
-      const reach = heroX + 12 * PX + (wpn === 'katana' ? 24 : wpn === 'trident' ? 22 : wpn === 'axe' ? 20 : 18);
+      const reach = heroX + 12 * PX + (wpn === 'katana' || wpn === 'hwando' ? 24 : wpn === 'trident' ? 22 : wpn === 'axe' || wpn === 'club' ? 20 : 18);
       const ranged = !!RANGED[wpn];
 
       // 아직 날아오는 중인 공격만큼은 HP가 덜 깎인 것으로 보여줌 (맞는 순간 깎임)
@@ -1027,6 +1027,8 @@
       const casting = hr.swingT > 0;
       if (w === 'sword') return this.sword(hx, hy, a);
       if (w === 'katana') return this.katana(hx, hy, a);
+      if (w === 'hwando') return this.hwando(hx, hy, a);
+      if (w === 'club') return this.club(hx, hy, a);
       if (w === 'trident') return this.trident(hx, hy, a);
       if (w === 'hammer') return this.hammer(hx, hy, a);
       if (w === 'ladle') return this.ladle(hx, hy, a);
@@ -1143,6 +1145,29 @@
       for (let i = len; i <= len + 1; i++) for (let k = -1; k <= 1; k++) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, k === -1 || i === len + 1 ? '#DDE3F0' : '#9AA3B8');
     }
 
+    // 환도(조선의 칼): 가볍게 휜 날과 붉은 술(매듭)이 달린 손잡이
+    hwando(hx, hy, a) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let k = -1; k <= 1; k++) this.px(hx + gx * k * 2, hy + gy * k * 2, 2, 2, k === 0 ? '#C9962B' : '#2E2B3A');
+      this.px(hx - cx * 3 + gx * 2, hy - sy * 3 + gy * 2, 2, 2, '#D9382E'); // 술
+      this.px(hx - cx * 5 + gx * 3, hy - sy * 5 + gy * 3, 2, 2, '#D9382E');
+      for (let i = 1; i <= 10; i++) {
+        const bow = i > 4 ? Math.round((i - 4) * 0.35) : 0; // 끝으로 갈수록 살짝 휜다
+        this.px(hx + cx * i * PX - gx * bow, hy + sy * i * PX - gy * bow, 2, 2, i >= 9 ? '#FFFFFF' : i % 3 === 0 ? '#DDE6F5' : '#F5F7FF');
+      }
+    }
+
+    // 도깨비 방망이: 울퉁불퉁한 가시가 박힌 굵은 몽둥이
+    club(hx, hy, a, len = 6) {
+      const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
+      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#8B5A2B');
+      for (let i = len; i <= len + 3; i++) {
+        const half = i === len + 3 ? 1 : 2;
+        for (let k = -half; k <= half; k++) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, Math.abs(k) === half ? '#6B4A2A' : '#A8743A');
+      }
+      for (const [i, k] of [[len, 2], [len + 1, -3], [len + 2, 3], [len + 3, -2], [len + 4, 0]]) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, '#F4E3C1'); // 쇠 가시
+    }
+
     katana(hx, hy, a) {
       const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
       for (let k = -1; k <= 1; k++) this.px(hx + gx * k * 2, hy + gy * k * 2, 2, 2, '#2E2B3A');
@@ -1154,6 +1179,8 @@
       const w = hr.skin.weapon || 'sword';
       if (w === 'sword') return this.sword(x, ground - 1, -Math.PI / 2, 8);
       if (w === 'katana') return this.katana(x, ground - 1, -Math.PI / 2);
+      if (w === 'hwando') return this.hwando(x, ground - 1, -Math.PI / 2);
+      if (w === 'club') return this.club(x, ground - 1, -Math.PI / 2, 7);
       if (w === 'trident') return this.trident(x, ground - 1, -Math.PI / 2, 9);
       if (w === 'ladle') return this.ladle(x, ground - 1, -Math.PI / 2, 8);
       if (w === 'axe') return this.axe(x, ground - 1, -Math.PI / 2, 7);
