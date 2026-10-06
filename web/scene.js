@@ -487,7 +487,7 @@
           // 원거리: 마법탄 · 화살 · 수리검을 쏜다
           e.targeted = true;
           h.swingT = 0.3;
-          h.shots.push({ x: heroX + 13 * PX, y: ground - 9 * PX, target: e, kind: wpn, t: 0, letter: wpn === 'keyboard' ? 'QWERTYUASDFGHZXCVB'[Math.floor(Math.random() * 18)] : null });
+          h.shots.push({ x: wpn === 'bone' ? heroX + 6 : heroX + 13 * PX, y: wpn === 'bone' ? ground - 8 * PX : ground - 9 * PX, target: e, kind: wpn, t: 0, letter: wpn === 'keyboard' ? 'QWERTYUASDFGHZXCVB'[Math.floor(Math.random() * 18)] : null });
         }
       }
       for (const sh of h.shots) {
@@ -1007,10 +1007,13 @@
         return;
       }
       if (w === 'bone') {
-        // 뼈다귀: 손에 물고 앞으로 내밀고, 던질 때 한 칸 더 앞으로 번쩍
+        // 뼈다귀: 평소엔 앞으로 내밀고 있다가, 던질 때 뒤로 젖혔다가(비스듬히 위로) 앞으로 휘두르며 손을 떠난다
         const y0 = hy - PX;
-        this.dots([...BONE[0], ...(casting ? [[7, 0, '#FFFFFF']] : [])], hx - (casting ? 0 : PX), y0, {});
-        return;
+        if (!casting) { this.dots(BONE[0], hx - PX, y0, {}); return; }
+        const k = Math.min(1, Math.max(0, 1 - hr.swingT / 0.3));
+        if (k < 0.4) this.dots(BONE[3], hx - 2 * PX, y0 - 3 * PX, {});
+        else if (k < 0.75) this.dots([...BONE[0], [7, 0, '#FFFFFF']], hx + PX, y0 - 2 * PX, {});
+        return; // 그 뒤로는 손이 빈 채로 (날아간 뼈는 투사체가 그림)
       }
       if (w === 'keyboard') {
         // 키보드: 키캡이 무지개색으로 돌아가며 빛남
@@ -1140,9 +1143,11 @@
           // 할퀸 자국: 세 줄의 비스듬한 발톱 궤적이 날아감
           for (const k of [-1, 0, 1]) for (let j = 0; j < 4; j++) this.px(sh.x - 6 + j * 2, sh.y - 5 + k * 5 + j * 2, 2, 2, k === 0 ? '#FFFFFF' : '#FFD9E6');
         } else if (sh.kind === 'bone') {
-          // 뼈다귀: 빙글빙글 돌며 날아가고 하얀 꼬리가 남음
-          this.ctx.globalAlpha = 0.3; this.px(sh.x - 14, sh.y - 1, 14, 2, '#FFF6E0'); this.ctx.globalAlpha = 1;
-          { const k = Math.floor(sh.t * 8) % 4; this.dots(BONE[k], sh.x + BONE_OFF[k][0] * 2, sh.y + BONE_OFF[k][1] * 2, {}, 2); }
+          // 뼈다귀: 손을 떠난 뒤(0.22초) 빙글빙글 돌며 날아가고 하얀 꼬리가 남음
+          if (sh.t >= 0.22) {
+            this.ctx.globalAlpha = 0.3; this.px(sh.x - 14, sh.y - 1, 14, 2, '#FFF6E0'); this.ctx.globalAlpha = 1;
+            const k = Math.floor(sh.t * 8) % 4; this.dots(BONE[k], sh.x + BONE_OFF[k][0] * 2, sh.y + BONE_OFF[k][1] * 2, {}, 2);
+          }
         } else if (sh.kind === 'keyboard') {
           // 키캡 탄: 글자가 새겨진 키캡
           const x = sh.x - 4, y = sh.y - 4;
