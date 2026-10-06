@@ -1,24 +1,24 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Claude · Codex · Cursor 남은 사용량을 화면 위 용사의 HP로 보여주는 무료 데스크톱 앱 (맥 · 윈도우)">
+<meta name="description" content="A free desktop app (Mac &amp; Windows) that shows your remaining Claude · Codex · Cursor usage as a hero's HP on your screen">
 <link rel="icon" href="/icon.png">
-<link rel="canonical" href="https://token-slayer.vercel.app/">
+<link rel="canonical" href="https://token-slayer.vercel.app/en/">
 <link rel="alternate" hreflang="ko" href="https://token-slayer.vercel.app/">
 <link rel="alternate" hreflang="en" href="https://token-slayer.vercel.app/en/">
 <link rel="alternate" hreflang="x-default" href="https://token-slayer.vercel.app/en/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Token Slayer">
-<meta property="og:locale" content="ko_KR">
-<meta property="og:url" content="https://token-slayer.vercel.app/">
-<meta property="og:title" content="Token Slayer — 남은 토큰이 곧 용사의 HP">
-<meta property="og:description" content="Claude · Codex · Cursor 남은 사용량을 화면 위 용사의 HP로 보여주는 무료 데스크톱 앱 (맥 · 윈도우)">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://token-slayer.vercel.app/en/">
+<meta property="og:title" content="Token Slayer — your remaining tokens are the hero's HP">
+<meta property="og:description" content="A free desktop app (Mac &amp; Windows) that shows your remaining Claude · Codex · Cursor usage as a hero's HP on your screen">
 <meta property="og:image" content="https://token-slayer.vercel.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Token Slayer: 용사 셋이 날아오는 코드와 싸우는 화면">
+<meta property="og:image:alt" content="Token Slayer: three heroes fighting incoming code">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Token Slayer — 남은 토큰이 곧 용사의 HP">
-<meta name="twitter:description" content="Claude · Codex · Cursor 남은 사용량을 화면 위 용사의 HP로 보여주는 무료 데스크톱 앱 (맥 · 윈도우)">
+<meta name="twitter:title" content="Token Slayer — your remaining tokens are the hero's HP">
+<meta name="twitter:description" content="A free desktop app (Mac &amp; Windows) that shows your remaining Claude · Codex · Cursor usage as a hero's HP on your screen">
 <meta name="twitter:image" content="https://token-slayer.vercel.app/og.png">
 <title>Token Slayer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -188,13 +188,13 @@ footer a { color: var(--muted); }
   <header class="top">
     <a class="brand" href="#top"><i></i>TOKEN SLAYER</a>
     <nav>
-      <a href="#rules">규칙</a>
-      <a href="#features">기능</a>
-      <a href="#premium">프리미엄</a>
-      <a href="#privacy">읽는 것</a>
-      <a href="#download">받기</a>
-      <a href="https://github.com/sigcrew/token-slayer-releases/releases">모든 버전</a>
-      <a href="/en/" hreflang="en" lang="en" class="lang">EN</a>
+      <a href="#rules">Rules</a>
+      <a href="#features">Features</a>
+      <a href="#premium">Premium</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/sigcrew/token-slayer-releases/releases">All versions</a>
+      <a href="/" hreflang="ko" lang="ko" class="lang">한국어</a>
     </nav>
   </header>
 
@@ -202,125 +202,125 @@ footer a { color: var(--muted); }
     <div class="hero">
       <div>
         <p class="eyebrow">CLAUDE · CODEX · CURSOR</p>
-        <h1>남은 토큰이 곧<br><em>용사의 HP</em></h1>
-        <p class="lead">AI 에이전트가 일하면 용사가 날아오는 코드를 베고, 쉬면 모닥불 앞에 앉아요. 사용량이 1% 줄 때마다 한 대씩 맞아요. 한도를 확인하러 사이트를 열 필요가 없어요.</p>
+        <h1>Your remaining tokens<br>are the <em>hero's HP</em></h1>
+        <p class="lead">When your AI agent works, a hero slashes the incoming code; when it rests, the hero sits by the campfire. Every 1% of usage you spend, the hero takes a hit. No more opening a website to check your limits.</p>
         <div class="cta">
           <a class="btn" id="primary" href="https://github.com/sigcrew/token-slayer-releases/releases/latest">
-            <span id="primaryText">무료로 받기</span><small id="primaryArch"></small>
+            <span id="primaryText">Download free</span><small id="primaryArch"></small>
           </a>
-          <span class="alt" id="altLinks">맥 · 윈도우 · <a href="#download">다른 버전</a></span>
+          <span class="alt" id="altLinks">Mac · Windows · <a href="#download">Other versions</a></span>
         </div>
-        <p class="ver" id="ver">FREE · MAC &amp; WINDOWS · 자동 업데이트</p>
+        <p class="ver" id="ver">FREE · MAC &amp; WINDOWS · AUTO-UPDATE</p>
       </div>
 
-      <div class="screen" aria-label="Token Slayer 화면 미리보기">
+      <div class="screen" aria-label="Token Slayer live preview">
         <div class="stage" id="stage"><canvas id="scene"></canvas></div>
         <div class="controls">
-          <button type="button" id="cWork"><b>FIGHT</b>Claude 일 시키기</button>
-          <button type="button" id="cHit"><b>-5%</b>사용량 쓰기</button>
-          <button type="button" id="cHeal"><b>RESET</b>한도 리셋</button>
-          <button type="button" id="cDragon"><b>RARE</b>드래곤 소환</button>
+          <button type="button" id="cWork"><b>FIGHT</b>Put Claude to work</button>
+          <button type="button" id="cHit"><b>-5%</b>Spend usage</button>
+          <button type="button" id="cHeal"><b>RESET</b>Reset limit</button>
+          <button type="button" id="cDragon"><b>RARE</b>Summon dragon</button>
         </div>
-        <p class="hint">용사를 누르면 반응해요. 다섯 번 연속으로 누르면 화내요.</p>
+        <p class="hint">Click the hero to get a reaction. Click five times in a row and it gets angry.</p>
       </div>
     </div>
 
     <section id="demo">
-      <h2>실제 앱 화면</h2>
-      <p class="sub">설치하면 이렇게 화면 구석에 떠 있어요. 처음엔 기본 용사, 이어서 프리미엄 할로윈 시리즈가 나와요.</p>
-      <div class="demo"><video src="demo.mp4" poster="demo-poster.png" autoplay muted loop playsinline preload="metadata" aria-label="Token Slayer 실제 화면 영상"></video></div>
+      <h2>The real app</h2>
+      <p class="sub">Once installed, it floats in a corner of your screen like this. First the default hero, then the premium Halloween series.</p>
+      <div class="demo"><video src="/demo.mp4" poster="/demo-poster.png" autoplay muted loop playsinline preload="metadata" aria-label="Token Slayer screen recording"></video></div>
     </section>
 
     <section id="rules">
-      <h2>사용량을 읽는 법</h2>
-      <p class="sub">서비스마다 용사가 한 명씩 나와요. 5시간 · 주간 · 월간 한도 중 가장 적게 남은 한도가 그 용사의 HP예요.</p>
+      <h2>How usage is read</h2>
+      <p class="sub">Each service gets its own hero. The hero's HP is whichever of the 5-hour, weekly or monthly limits has the least left.</p>
       <div class="rules">
-        <div class="rule"><span class="k fight">FIGHT</span><p>에이전트가 일하는 동안 코드와 싸워요.</p><span class="when">작업 기록이 쓰이는 순간 반응</span></div>
-        <div class="rule"><span class="k rest">REST</span><p>일이 끝나면 모닥불 앞에서 쉬어요.</p><span class="when">Claude 45초, Codex 30초 뒤</span></div>
-        <div class="rule"><span class="k hit">HIT</span><p>사용량이 1% 줄 때마다 한 대씩 맞아요.</p><span class="when">HP 20% · 10%에 경고 알림</span></div>
-        <div class="rule"><span class="k over">GAME OVER</span><p>0%가 되면 쓰러지고 비석이 서요.</p><span class="when">리셋까지 남은 시간 표시</span></div>
-        <div class="rule"><span class="k heal">POTION</span><p>한도가 리셋되면 포션을 마시고 부활해요.</p><span class="when">레벨과 경험치는 그대로</span></div>
+        <div class="rule"><span class="k fight">FIGHT</span><p>Fights the code while your agent works.</p><span class="when">Reacts the moment work is logged</span></div>
+        <div class="rule"><span class="k rest">REST</span><p>Rests by the campfire when work ends.</p><span class="when">45s after Claude, 30s after Codex</span></div>
+        <div class="rule"><span class="k hit">HIT</span><p>Takes a hit for every 1% of usage.</p><span class="when">Warnings at 20% and 10% HP</span></div>
+        <div class="rule"><span class="k over">GAME OVER</span><p>At 0% the hero falls and a gravestone appears.</p><span class="when">Shows time until reset</span></div>
+        <div class="rule"><span class="k heal">POTION</span><p>When the limit resets, the hero drinks a potion and revives.</p><span class="when">Level and XP are kept</span></div>
       </div>
     </section>
 
     <section id="features">
-      <h2>쓰는 만큼 자라는 용사</h2>
-      <p class="sub">아껴 쓰라는 앱이 아니에요. 한도는 리셋 전에 쓰는 게 이득이라, 쓸수록 레벨이 올라요.</p>
+      <h2>A hero that grows as you use</h2>
+      <p class="sub">This isn't an app that tells you to save. Limits are best used before they reset, so the more you use, the higher the level.</p>
       <div class="feats">
-        <div class="feat"><h3>BURNING TIME <span class="tag">XP ×2</span></h3><p>주간 · 월간 한도의 리셋이 가까운데 많이 남았으면 경험치가 두 배가 돼요. 주간은 리셋 12시간 전에 20% 이상, 월간은 3일 전에 20% 이상 남았을 때예요.</p></div>
-        <div class="feat"><h3>바닥 예측</h3><p>최근 30분 속도로 언제 0%가 되는지 계산해요. 리셋보다 먼저 바닥나면 <span class="num">OUT 1H20</span>처럼 미리 알려 줘요.</p></div>
-        <div class="feat"><h3>레벨 · 업적 <span class="tag">64</span></h3><p>서비스마다 공평하게 경험치를 받아요. 새벽 작업, 연속 BURNING, 게임 오버 뒤 부활 같은 업적이 있고 몇 개는 숨겨져 있어요.</p></div>
-        <div class="feat"><h3>전설의 드래곤 <span class="tag">1 / 60000</span></h3><p>아주 드물게 드래곤이 날아와요. 한 번 나오면 7일 동안은 안 나와요. 나오면 알림이 가니까 놓치지 마세요.</p></div>
-        <div class="feat"><h3>꾸미기 <span class="tag">FREE 17</span></h3><p>해적, 요리사, 우주인, 고양이, 바이킹 같은 용사 직업과 날아오는 적(커밋 로그, 알림 폭탄, 타입 에러), 쉬는 장면(야식 라면, 휴대용 게임기)을 서비스마다 골라요. 몇 개는 레벨을 올려야 열려요.</p></div>
-        <div class="feat"><h3>주간 기록 카드</h3><p>이번 주에 서비스별로 얼마나 썼는지 이미지 한 장으로 만들어 줘요. 바로 붙여 넣을 수 있게 클립보드에도 복사돼요.</p></div>
+        <div class="feat"><h3>BURNING TIME <span class="tag">XP ×2</span></h3><p>When a weekly or monthly reset is near and plenty is left, XP doubles. For weekly limits that's 20%+ left within 12 hours of reset; for monthly, 20%+ left within 3 days.</p></div>
+        <div class="feat"><h3>Run-out forecast</h3><p>It calculates when you'll hit 0% at your last 30 minutes' pace. If you'll run out before the reset, it warns you ahead of time, like <span class="num">OUT 1H20</span>.</p></div>
+        <div class="feat"><h3>Levels · Achievements <span class="tag">64</span></h3><p>Each service earns XP fairly. There are achievements like late-night work, back-to-back BURNING, and reviving after a game over — and a few are hidden.</p></div>
+        <div class="feat"><h3>Legendary Dragon <span class="tag">1 / 60000</span></h3><p>Very rarely, a dragon flies in. Once one appears, there's a 7-day cooldown. You'll get a notification when it shows up, so don't miss it.</p></div>
+        <div class="feat"><h3>Customization <span class="tag">FREE 17</span></h3><p>Pick hero classes (pirate, chef, astronaut, cat, viking…), incoming enemies (commit logs, notification bombs, type errors) and rest scenes (midnight ramen, a handheld console) for each service. A few unlock as you level up.</p></div>
+        <div class="feat"><h3>Weekly record card</h3><p>Turns how much you used each service this week into a single image, and copies it to the clipboard so you can paste it right away.</p></div>
       </div>
     </section>
 
     <section id="premium">
-      <h2>프리미엄 꾸미기 팩</h2>
-      <p class="sub">앱은 계속 무료예요. 꾸미기를 더 즐기고 싶다면 다섯 가지 세계관 시리즈, 프리미엄 팩 25종을 한 번에 열 수 있어요. 결제하면 개발을 응원하는 셈이 돼요.</p>
+      <h2>Premium cosmetic packs</h2>
+      <p class="sub">The app stays free. If you want more cosmetics, unlock five themed series — 25 premium packs — at once. Buying also supports development.</p>
       <div class="buy">
         <ul class="packs">
-          <li><span class="t">🎌 일본풍</span><span><b>사무라이 · 닌자</b> <span class="d">검광과 벚꽃 · 스카프와 연막 · 신사 야경 · 요괴 · 별밤 랜턴</span></span></li>
-          <li><span class="t">🔥 야근 지옥</span><span><b>악마</b> <span class="d">꼬리와 불꽃 뿔 · 용암 · 용암 온천 · 레거시 코드 · 회의 지옥</span></span></li>
-          <li><span class="t">🏰 던전</span><span><b>성기사</b> <span class="d">후광과 전투 망치 · 던전 · 횃불 야영 · 던전 몬스터</span></span></li>
-          <li><span class="t">🎃 할로윈</span><span><b>마녀 · 흡혈귀</b> <span class="d">초록 눈빛 마법과 박쥐 망토 · 달밤 묘지 · 호박밭 · 유령과 친구들 · 호박 랜턴</span></span></li>
-          <li><span class="t">🌃 사이버</span><span><b>해커</b> <span class="d">RGB 키보드와 키캡 탄 · 사이버펑크 · 서버실 · 야간 코딩 책상 · 사이버 공격</span></span></li>
+          <li><span class="t">🎌 Japan</span><span><b>Samurai · Ninja</b> <span class="d">Sword flash &amp; cherry blossoms · scarf &amp; smoke · shrine at night · yokai · starry lanterns</span></span></li>
+          <li><span class="t">🔥 Overtime Hell</span><span><b>Demon</b> <span class="d">Tail &amp; flame horns · lava · lava hot spring · legacy code · meeting hell</span></span></li>
+          <li><span class="t">🏰 Dungeon</span><span><b>Paladin</b> <span class="d">Halo &amp; war hammer · dungeon · torchlit camp · dungeon monsters</span></span></li>
+          <li><span class="t">🎃 Halloween</span><span><b>Witch · Vampire</b> <span class="d">Green-eyed magic &amp; bat cape · moonlit graveyard · pumpkin patch · ghosts &amp; friends · jack-o'-lantern</span></span></li>
+          <li><span class="t">🌃 Cyber</span><span><b>Hacker</b> <span class="d">RGB keyboard &amp; keycap shots · cyberpunk · server room · late-night coding desk · cyber attacks</span></span></li>
         </ul>
         <div class="price">
           <p class="amt">₩6,900<small>ONE-TIME</small></p>
           <ul>
-            <li>구독 없이 한 번만 결제</li>
-            <li>프리미엄 팩 25종 전부, 앞으로 추가되는 프리미엄 팩도 포함</li>
-            <li>고해상도 도트 용사 (꾸미기 → 도트 해상도에서 켜기)</li>
-            <li>컴퓨터 2대까지 사용 (맥 · 윈도우 모두)</li>
-            <li>결제하면 라이선스 키를 이메일로 보내 드려요</li>
+            <li>One-time payment, no subscription</li>
+            <li>All 25 premium packs, plus any premium packs added later</li>
+            <li>High-resolution pixel heroes (turn on under Customize → Pixel resolution)</li>
+            <li>Use on up to 2 computers (Mac and Windows)</li>
+            <li>Your license key is emailed after purchase</li>
           </ul>
-          <a class="btn" id="buy" href="https://tokenslayer.lemonsqueezy.com/checkout/buy/6c4b6ac3-9c88-4e7d-bd0e-4a446d47badd">프리미엄 팩 구매하기</a>
-          <p class="fine">결제는 Lemon Squeezy가 처리하고 부가세도 여기서 계산돼요. 카드 정보는 이 앱과 사이트에 저장되지 않아요.</p>
+          <a class="btn" id="buy" href="https://tokenslayer.lemonsqueezy.com/checkout/buy/6c4b6ac3-9c88-4e7d-bd0e-4a446d47badd">Buy premium packs</a>
+          <p class="fine">Payment is handled by Lemon Squeezy, which also calculates taxes. Card details are never stored by this app or site.</p>
         </div>
       </div>
       <div class="faq">
-        <div><h3>레벨을 올려도 열리나요?</h3><p>네. 던전은 Lv.10, 사무라이는 Lv.34, 닌자는 Lv.40처럼 팩마다 정해진 레벨이 되면 어느 용사든 무료로 열려요. 레벨은 한도를 꾸준히 채워 쓸수록 올라가고, 닌자까지는 한도를 매주 다 써도 4~5개월쯤 걸려요. 결제는 기다리지 않고 바로 쓰고 싶은 분을 위한 지름길이에요.</p></div>
-        <div><h3>어떻게 적용하나요?</h3><p>앱의 <b>꾸미기 → 프리미엄 팩 구매하기</b>에서 결제하고, 받은 키를 복사한 뒤 <b>복사한 라이선스 키로 잠금 해제</b>를 누르면 끝이에요.</p></div>
-        <div><h3>환불되나요?</h3><p>구매 후 14일 안에는 이유를 묻지 않고 환불해 드려요. 환불하면 키는 자동으로 비활성화돼요. 문의는 <a href="https://github.com/sigcrew/token-slayer-releases/issues">GitHub 이슈</a>로 남겨 주세요.</p></div>
+        <div><h3>Can I unlock them by leveling up?</h3><p>Yes. Each pack opens for free once any hero reaches its level — Dungeon at Lv.10, Samurai at Lv.34, Ninja at Lv.40, and so on. Levels rise the more steadily you use your limits; even using the full weekly limit, Ninja takes about 4–5 months. Buying is a shortcut for people who want them right away.</p></div>
+        <div><h3>How do I apply it?</h3><p>In the app, buy under <b>Customize → Buy premium packs</b>, copy the key you receive, then choose <b>Unlock with the copied license key</b>. That's it.</p></div>
+        <div><h3>Can I get a refund?</h3><p>Within 14 days of purchase, we refund with no questions asked, and the key is deactivated automatically. For questions, open a <a href="https://github.com/sigcrew/token-slayer-releases/issues">GitHub issue</a>.</p></div>
       </div>
     </section>
 
     <section id="privacy">
-      <h2>무엇을 읽나요</h2>
-      <p class="sub">이미 로그인해 둔 앱의 정보로 사용량만 물어봐요. 대화 내용은 읽지 않아요.</p>
+      <h2>What does it read?</h2>
+      <p class="sub">It uses the logins you already have to ask for usage only. It never reads your conversations.</p>
       <div class="scroll">
         <table class="reads">
-          <tr><th>CLAUDE</th><td>Claude Code 로그인, 또는 앱 안에서 한 claude.ai 로그인으로 사용량을 물어봐요</td><td>api.anthropic.com · claude.ai</td></tr>
-          <tr><th>CODEX</th><td><code>~/.codex/sessions</code> 기록 파일에서 사용 한도 줄만 읽어요</td><td>네트워크 요청 없음</td></tr>
-          <tr><th>CURSOR</th><td>Cursor 로그인 토큰으로 사용량을 물어봐요</td><td>cursor.com</td></tr>
-          <tr><th>작업 감지</th><td>위 앱들이 파일을 쓰는 <b>시각</b>만 봐요</td><td>내용은 열지 않음</td></tr>
+          <tr><th>CLAUDE</th><td>Asks for usage using your Claude Code login, or a claude.ai login made inside the app</td><td>api.anthropic.com · claude.ai</td></tr>
+          <tr><th>CODEX</th><td>Reads only the usage-limit lines from <code>~/.codex/sessions</code> log files</td><td>No network requests</td></tr>
+          <tr><th>CURSOR</th><td>Asks for usage using your Cursor login token</td><td>cursor.com</td></tr>
+          <tr><th>ACTIVITY</th><td>Only watches the <b>time</b> the apps above write files</td><td>Contents never opened</td></tr>
         </table>
       </div>
-      <p class="noserver"><b>NO SERVER</b>Token Slayer는 따로 운영하는 서버가 없고 아무것도 수집하지 않아요. 모든 처리는 내 컴퓨터 안에서 끝나요.</p>
+      <p class="noserver"><b>NO SERVER</b>Token Slayer has no server of its own and collects nothing. Everything is processed on your computer.</p>
     </section>
 
     <section id="download">
-      <h2>받기</h2>
-      <p class="sub">한 번 설치하면 새 버전은 앱이 알아서 받아서 설치해요.</p>
+      <h2>Download</h2>
+      <p class="sub">Install once; the app downloads and installs new versions by itself.</p>
       <div class="dl">
         <div class="os">
           <h3>macOS</h3>
           <ul>
-            <li><a id="dMacArm" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-mac-arm64.dmg"><span>Apple 실리콘 (M1 이후)</span><span>ARM64 · DMG</span></a></li>
-            <li><a id="dMacX64" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-mac-x64.dmg"><span>Intel 맥</span><span>X64 · DMG</span></a></li>
+            <li><a id="dMacArm" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-mac-arm64.dmg"><span>Apple silicon (M1 and later)</span><span>ARM64 · DMG</span></a></li>
+            <li><a id="dMacX64" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-mac-x64.dmg"><span>Intel Mac</span><span>X64 · DMG</span></a></li>
           </ul>
-          <p class="note">dmg를 열고 앱을 <b>응용 프로그램</b> 폴더로 옮긴 다음 열어요. Apple 공증을 받아서 경고 없이 열려요.</p>
+          <p class="note">Open the dmg, move the app to your <b>Applications</b> folder, then launch it. It's notarized by Apple, so it opens without warnings.</p>
         </div>
         <div class="os">
           <h3>Windows</h3>
           <ul>
-            <li><a id="dWinX64" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Setup-x64.exe"><span>설치 파일</span><span>X64 · EXE</span></a></li>
-            <li><a id="dWinArm" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Setup-arm64.exe"><span>설치 파일 (ARM 노트북)</span><span>ARM64 · EXE</span></a></li>
-            <li><a href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Portable-x64.exe"><span>설치 없이 실행 (자동 업데이트 없음)</span><span>PORTABLE</span></a></li>
+            <li><a id="dWinX64" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Setup-x64.exe"><span>Installer</span><span>X64 · EXE</span></a></li>
+            <li><a id="dWinArm" href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Setup-arm64.exe"><span>Installer (ARM laptops)</span><span>ARM64 · EXE</span></a></li>
+            <li><a href="https://github.com/sigcrew/token-slayer-releases/releases/latest/download/TokenSlayer-Portable-x64.exe"><span>Run without installing (no auto-update)</span><span>PORTABLE</span></a></li>
           </ul>
-          <p class="note">아직 코드 서명이 없어서 처음에 <b>Windows의 PC 보호</b> 창이 떠요. <b>추가 정보 → 실행</b>을 누르면 돼요.</p>
+          <p class="note">The app isn't code-signed yet, so Windows shows a <b>SmartScreen</b> window at first. Click <b>More info → Run anyway</b>.</p>
         </div>
       </div>
     </section>
@@ -328,12 +328,12 @@ footer a { color: var(--muted); }
 
   <footer>
     <span>Token Slayer · SIG Inc.</span>
-    <span><a href="https://github.com/sigcrew/token-slayer-releases/releases">모든 버전 · 변경 내역</a></span>
+    <span><a href="https://github.com/sigcrew/token-slayer-releases/releases">All versions · changelog</a></span>
   </footer>
 </div>
 
-<script src="builtin-packs.js"></script>
-<script src="scene.js"></script>
+<script src="/builtin-packs.js"></script>
+<script src="/scene.js"></script>
 <script>
 (function () {
   // ── 구매 링크가 아직 없으면 버튼을 잠근다 ──
@@ -341,7 +341,7 @@ footer a { color: var(--muted); }
   if (buy && buy.getAttribute('href').indexOf('%%') === 0) {
     buy.removeAttribute('href');
     buy.setAttribute('aria-disabled', 'true');
-    buy.textContent = '곧 열려요';
+    buy.textContent = 'Coming soon';
   }
 })();
 (function () {
@@ -360,34 +360,34 @@ footer a { color: var(--muted); }
     if (el) el.classList.add('mine');
   };
   if (isMac) {
-    setPrimary('맥용 받기', 'APPLE SILICON', 'TokenSlayer-mac-arm64.dmg', 'dMacArm');
-    document.getElementById('altLinks').innerHTML = 'Intel 맥이라면 <a href="' + REL + 'TokenSlayer-mac-x64.dmg">여기</a> · <a href="#download">윈도우</a>';
+    setPrimary('Download for Mac', 'APPLE SILICON', 'TokenSlayer-mac-arm64.dmg', 'dMacArm');
+    document.getElementById('altLinks').innerHTML = 'On an Intel Mac? <a href="' + REL + 'TokenSlayer-mac-x64.dmg">Get this</a> · <a href="#download">Windows</a>';
     // 크롬 계열은 CPU 종류를 알려 줌
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
       navigator.userAgentData.getHighEntropyValues(['architecture']).then((v) => {
         if (v.architecture === 'x86') {
-          setPrimary('맥용 받기', 'INTEL', 'TokenSlayer-mac-x64.dmg', 'dMacX64');
-          document.getElementById('altLinks').innerHTML = 'Apple 실리콘이라면 <a href="' + REL + 'TokenSlayer-mac-arm64.dmg">여기</a> · <a href="#download">윈도우</a>';
+          setPrimary('Download for Mac', 'INTEL', 'TokenSlayer-mac-x64.dmg', 'dMacX64');
+          document.getElementById('altLinks').innerHTML = 'On Apple silicon? <a href="' + REL + 'TokenSlayer-mac-arm64.dmg">Get this</a> · <a href="#download">Windows</a>';
         }
       }).catch(() => {});
     }
   } else if (isWin) {
-    setPrimary('윈도우용 받기', 'X64', 'TokenSlayer-Setup-x64.exe', 'dWinX64');
-    document.getElementById('altLinks').innerHTML = '<a href="' + REL + 'TokenSlayer-Setup-arm64.exe">ARM 노트북</a> · <a href="#download">맥</a>';
+    setPrimary('Download for Windows', 'X64', 'TokenSlayer-Setup-x64.exe', 'dWinX64');
+    document.getElementById('altLinks').innerHTML = '<a href="' + REL + 'TokenSlayer-Setup-arm64.exe">ARM laptop</a> · <a href="#download">Mac</a>';
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
       navigator.userAgentData.getHighEntropyValues(['architecture']).then((v) => {
-        if (v.architecture === 'arm') setPrimary('윈도우용 받기', 'ARM64', 'TokenSlayer-Setup-arm64.exe', 'dWinArm');
+        if (v.architecture === 'arm') setPrimary('Download for Windows', 'ARM64', 'TokenSlayer-Setup-arm64.exe', 'dWinArm');
       }).catch(() => {});
     }
   } else {
-    document.getElementById('primaryText').textContent = '맥 · 윈도우용 받기';
+    document.getElementById('primaryText').textContent = 'Download for Mac · Windows';
     primary.href = '#download';
   }
 
   // 최신 버전 번호 (못 가져오면 그대로 둠)
   fetch('https://api.github.com/repos/sigcrew/token-slayer-releases/releases/latest')
     .then((r) => (r.ok ? r.json() : null))
-    .then((d) => { if (d && d.tag_name) document.getElementById('ver').textContent = d.tag_name.toUpperCase() + ' · FREE · MAC & WINDOWS · 자동 업데이트'; })
+    .then((d) => { if (d && d.tag_name) document.getElementById('ver').textContent = d.tag_name.toUpperCase() + ' · FREE · MAC & WINDOWS · AUTO-UPDATE'; })
     .catch(() => {});
 
   // ── 살아 있는 용사 화면 ──
@@ -453,9 +453,9 @@ footer a { color: var(--muted); }
   bWork.onclick = () => {
     busy.claude = !busy.claude;
     scene.setState('claude', { busy: busy.claude });
-    bWork.innerHTML = busy.claude ? '<b>REST</b>Claude 쉬게 하기' : '<b>FIGHT</b>Claude 일 시키기';
+    bWork.innerHTML = busy.claude ? '<b>REST</b>Let Claude rest' : '<b>FIGHT</b>Put Claude to work';
   };
-  bWork.innerHTML = '<b>REST</b>Claude 쉬게 하기';
+  bWork.innerHTML = '<b>REST</b>Let Claude rest';
   document.getElementById('cHit').onclick = () => use('claude', 5);
   document.getElementById('cHeal').onclick = () => reset('claude');
   document.getElementById('cDragon').onclick = () => {
