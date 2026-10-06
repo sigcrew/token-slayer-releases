@@ -126,7 +126,7 @@
     fatal: ['BUG', '429', 'ERR'],
   };
   const DEFAULT_REST = { id: 'campfire', frames: FLAME.map((f) => [...f, 'BbbbB', '.BbB.']), palette: FIRE, glow: '#FF9F1C', embers: true };
-  const RANGED = { staff: true, bow: true, shuriken: true, terminal: true, raygun: true, claw: true, keyboard: true, pistol: true, bone: true };
+  const RANGED = { staff: true, bow: true, shuriken: true, terminal: true, raygun: true, claw: true, keyboard: true, pistol: true, bone: true, bats: true, flask: true };
   // 뼈다귀: 양 끝에 둥근 마디가 두 개씩 달린 하얀 뼈. 방향 4가지(가로 · \ · 세로 · /)로 돌려 가며 던진다
   const BW = '#FFFFFF', BS = '#C9CFE0';
   const boneCells = (pts) => pts.map(([x, y, shade]) => [x, y, shade ? BS : BW]);
@@ -137,7 +137,25 @@
     boneCells([[4, 0], [5, 0], [4, 1], [5, 1, 1], [2, 2], [3, 2], [2, 3], [3, 3, 1], [0, 4], [1, 4], [0, 5], [1, 5, 1]]),
   ];
   const BONE_OFF = [[-3, 0], [-3, -3], [0, -3], [-3, -3]];
-  const SHOT_SPEED = { staff: 220, raygun: 520, pistol: 420, bone: 150 }; // 그 밖의 원거리 탄은 300
+  // 박쥐: 날개를 위·아래로 치는 두 장면 (7×4칸). 밝은 보라 몸에 붉은 눈
+  const BAT = (() => {
+    const B = '#9A78D6', D = '#5F3F99', E = '#FF4D5A';
+    const cells = (rows) => { const out = []; rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === 'b') out.push([x, y, B]); else if (ch === 'd') out.push([x, y, D]); else if (ch === 'e') out.push([x, y, E]); })); return out; };
+    return [
+      cells(['d.....d', 'dd.b.dd', '.dbebd.', '..b.b..']), // 날개를 든 모습
+      cells(['.......', '.d.b.d.', 'ddbebdd', '.d...d.']), // 날개를 내린 모습
+    ];
+  })();
+  // 마녀의 물약병: 초록 물약이 찰랑이는 병 (돌아가며 날아감)
+  const FLASK = (() => {
+    const G = '#7CFF6B', g = '#4FD14A', C = '#CFE9FF', K = '#8B5A2B', W = '#FFFFFF';
+    const cells = (rows) => { const out = []; rows.forEach((r, y) => [...r].forEach((ch, x) => { const m = { G, g, C, K, W }[ch]; if (m) out.push([x, y, m]); })); return out; };
+    return [
+      cells(['.K.', '.C.', 'GGG', 'GWG', 'ggg']),
+      cells(['KC..', '.CGG', '.GGg', '.Ggg']),
+    ];
+  })();
+  const SHOT_SPEED = { staff: 220, raygun: 520, pistol: 420, bone: 150, bats: 240, flask: 190 }; // 그 밖의 원거리 탄은 300
 
   function hex2rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
   const darken = (hex, f) => { const [r, g, b] = hex2rgb(hex); return `rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)})`; };
@@ -487,7 +505,7 @@
           // 원거리: 마법탄 · 화살 · 수리검을 쏜다
           e.targeted = true;
           h.swingT = 0.3;
-          h.shots.push({ x: wpn === 'bone' ? heroX + 6 : heroX + 13 * PX, y: wpn === 'bone' ? ground - 8 * PX : ground - 9 * PX, target: e, kind: wpn, t: 0, letter: wpn === 'keyboard' ? 'QWERTYUASDFGHZXCVB'[Math.floor(Math.random() * 18)] : null });
+          h.shots.push({ x: wpn === 'bone' || wpn === 'flask' ? heroX + 6 : heroX + 13 * PX, y: wpn === 'bone' || wpn === 'flask' ? ground - 8 * PX - this.flyLift(h) : ground - 9 * PX, target: e, kind: wpn, t: 0, letter: wpn === 'keyboard' ? 'QWERTYUASDFGHZXCVB'[Math.floor(Math.random() * 18)] : null });
         }
       }
       for (const sh of h.shots) {
@@ -810,7 +828,26 @@
     }
 
     // 몸 뒤에 그리는 덧붙임: tail(끝이 화살촉인 꼬리) · scarf(서비스 색 스카프) · headband(흰 머리띠 꼬리)
+    // 빗자루를 탄 용사(fly): 땅에서 1~2칸 떠서 천천히 위아래로 흔들린다
+    flyLift(hr) {
+      if (!hr.skin || !hr.skin.fly) return 0;
+      return Math.round(1.6 + Math.sin(hr.time * 2.2) * 0.6) * PX;
+    }
+
     extrasBack(hr, ox, oy, ex) {
+      if (ex.includes('broom')) {
+        // 빗자루: 몸 아래로 가로지르는 갈색 자루, 왼쪽 끝은 일렁이는 짚, 오른쪽 끝은 살짝 위로
+        const sw = Math.floor(hr.time * (hr.busy ? 8 : 3)) % 2;
+        const H = '#8B5A2B', h = '#6B4A2A', S1 = '#E8C25A', S2 = '#C9962B', T = '#4A3320';
+        const list = [];
+        // 위젯 왼쪽 끝에 붙어 있어서 왼쪽으로는 2칸까지만 (그 밖은 잘림)
+        for (let x = 0; x <= 12; x++) list.push([x, 11, x % 3 === 0 ? h : H]);
+        list.push([13, 10, H], [14, 10, H], [15, 9, H]);
+        list.push([0, 10, T], [0, 12, T]);
+        const fan = [[-1, 9 + sw], [-1, 10], [-1, 11], [-1, 12], [-1, 13 - sw], [-2, 10 + sw], [-2, 11], [-2, 12 - sw]];
+        fan.forEach(([x, y], i) => list.push([x, y, i % 2 ? S2 : S1]));
+        this.dots(list, ox, oy + PX * 0.5, {});
+      }
       const wave = Math.sin(hr.time * (hr.busy ? 9 : 3));
       const step = (v) => (v > 0.4 ? 1 : v < -0.4 ? -1 : 0);
       if (ex.includes('datastream')) {
@@ -920,7 +957,7 @@
     }
 
     drawFighting(hr, heroX, ground) {
-      let ox = heroX, oy = ground - 14 * PX;
+      let ox = heroX, oy = ground - 14 * PX - this.flyLift(hr);
       const hit = hr.hitT > 0;
       if (hit) ox -= (Math.floor(this.time * 30) % 2 ? 1 : 2) * PX;
       const potion = hr.potionT > 0 ? 1 - hr.potionT / 1.9 : -1;
@@ -1004,6 +1041,23 @@
         // 고양이 발톱: 손끝에서 세 갈래로 튀어나온 하얀 발톱
         const y0 = hy - 2 * PX;
         this.dots([[0, 0, '#FFFFFF'], [1, -1, '#FFFFFF'], [2, -2, '#FFFFFF'], [0, -1, '#FFD9E6'], [1, -2, '#FFD9E6'], ...(casting ? [[3, -3, '#FF9DB8'], [3, -1, '#FF9DB8']] : [])], hx, y0, {});
+        return;
+      }
+      if (w === 'flask') {
+        // 물약병: 평소엔 손에 들고 찰랑이고, 던질 때 위로 젖혔다 휘두르며 손을 떠난다 (뼈다귀와 같은 동작)
+        const y0 = hy - 3 * PX;
+        if (!casting) { this.dots(FLASK[0], hx, y0 + (Math.floor(hr.time * 4) % 2 ? 0 : 1), {}); return; }
+        const k = Math.min(1, Math.max(0, 1 - hr.swingT / 0.3));
+        if (k < 0.4) this.dots(FLASK[1], hx - PX, y0 - 4 * PX, {});
+        else if (k < 0.75) this.dots(FLASK[0], hx + 2 * PX, y0 - 3 * PX, {});
+        return;
+      }
+      if (w === 'bats') {
+        // 박쥐: 평소엔 주먹 위에 앉아 날개를 천천히 접었다 폈다 하고, 던질 때는 날개를 활짝 펴고 날아오를 채비
+        const y0 = hy - 3 * PX;
+        const f = casting ? 0 : Math.floor(hr.time * 3) % 2;
+        this.dots(BAT[f], hx - PX, casting ? y0 - 2 * PX : y0, {});
+        if (casting) this.dots(BAT[1], hx + 3 * PX, y0 - 4 * PX, {}, 2);
         return;
       }
       if (w === 'bone') {
@@ -1106,6 +1160,8 @@
       if (w === 'raygun') { this.dots([[0, 0, '#2C6B5A'], [1, 0, '#3F8F7A'], [2, 0, '#3F8F7A'], [3, 0, '#6EE7B7'], [4, 0, '#6EE7B7'], [0, 1, '#2C6B5A'], [1, 1, '#3F8F7A']], x - PX, ground - 3 * PX, {}); return; }
       if (w === 'claw') return;
       if (w === 'bone') { this.dots(BONE[0], x - 2 * PX, ground - 3 * PX, {}); return; }
+      if (w === 'bats') { this.dots(BAT[1], x - 2 * PX, ground - 4 * PX, {}); return; }
+      if (w === 'flask') { this.dots(FLASK[0], x - PX, ground - 6 * PX, {}); return; }
       if (w === 'keyboard') { const cols = ['#FF5C6A', '#FFB347', '#FFE066', '#3DFF7A', '#22E6FF', '#B98CFF']; const f = Math.floor(this.time * 3); const row = []; for (let i = 0; i < 6; i++) row.push([i, 0, cols[(i + f) % 6]], [i, 1, '#2A2E4A']); this.dots(row, x - 2 * PX, ground - 2 * PX, {}); return; }
       if (w === 'pistol') { this.dots([[0, 0, '#8A8FA8'], [1, 0, '#B8C2D8'], [2, 0, '#B8C2D8'], [3, 0, '#B8C2D8'], [4, 0, '#DDE3F0'], [0, 1, '#8B5A2B'], [1, 1, '#8B5A2B']], x - PX, ground - 3 * PX, {}); return; }
       if (w === 'hammer') return this.hammer(x, ground - 1, -Math.PI / 2, 6);
@@ -1142,6 +1198,20 @@
         } else if (sh.kind === 'claw') {
           // 할퀸 자국: 세 줄의 비스듬한 발톱 궤적이 날아감
           for (const k of [-1, 0, 1]) for (let j = 0; j < 4; j++) this.px(sh.x - 6 + j * 2, sh.y - 5 + k * 5 + j * 2, 2, 2, k === 0 ? '#FFFFFF' : '#FFD9E6');
+        } else if (sh.kind === 'flask') {
+          // 물약병: 손을 떠난 뒤(0.22초) 빙글 돌며 날아가고 초록 거품이 뒤에 남음
+          if (sh.t >= 0.22) {
+            this.ctx.globalAlpha = 0.4;
+            for (let i = 1; i <= 3; i++) this.px(sh.x - i * 7, sh.y + Math.sin(sh.t * 18 + i) * 4, 3, 3, i % 2 ? '#7CFF6B' : '#CFFFC4');
+            this.ctx.globalAlpha = 1;
+            this.dots(FLASK[Math.floor(sh.t * 9) % 2], sh.x - 4, sh.y - 6, {}, 2);
+          }
+        } else if (sh.kind === 'bats') {
+          const flap = Math.floor(sh.t * 12) % 2;
+          for (let i = 0; i < 3; i++) {
+            const dy = Math.sin(sh.t * 11 + i * 2.1) * 5;
+            this.dots(BAT[(flap + i) % 2], sh.x - i * 10 - 6, sh.y - 6 + i * 6 + dy, {}, 2);
+          }
         } else if (sh.kind === 'bone') {
           // 뼈다귀: 손을 떠난 뒤(0.22초) 빙글빙글 돌며 날아가고 하얀 꼬리가 남음
           if (sh.t >= 0.22) {
@@ -1187,7 +1257,7 @@
 
     drawResting(hr, heroX, ground) {
       const { ctx } = this;
-      const ox = heroX, oy = ground - 12 * PX;
+      const ox = heroX, oy = ground - 12 * PX - this.flyLift(hr);
       // 무기를 옆에 두고
       this.weaponRest(hr, ox + 13 * PX, ground);
       this.px(ox + PX, ground, 12 * PX, 2, 'rgba(0,0,0,0.4)');
