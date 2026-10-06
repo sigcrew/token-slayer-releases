@@ -1166,15 +1166,15 @@
       this.px(Math.round(px), Math.round(py) + PX * 2, PX, PX, '#A82620');
     }
 
-    // 도깨비 방망이: 울퉁불퉁한 가시가 박힌 굵은 몽둥이
+    // 도깨비 방망이: 손잡이는 가늘고 끝으로 갈수록 불룩해지는 울퉁불퉁한 몽둥이 (쇠 가시가 박혀 있다)
     club(hx, hy, a, len = 6) {
       const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
-      for (let i = 1; i <= len; i++) this.px(hx + cx * i * PX, hy + sy * i * PX, PX, PX, '#8B5A2B');
-      for (let i = len; i <= len + 3; i++) {
-        const half = i === len + 3 ? 1 : 2;
-        for (let k = -half; k <= half; k++) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, Math.abs(k) === half ? '#6B4A2A' : '#A8743A');
+      const cell = (i, k, c) => this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, c);
+      for (let i = 1; i <= len - 1; i++) cell(i, 0, i % 3 === 0 ? '#6B4A2A' : '#8B5A2B'); // 손잡이
+      for (const [i, half] of [[len, 1], [len + 1, 1], [len + 2, 2], [len + 3, 2], [len + 4, 2], [len + 5, 1]]) {
+        for (let k = -half; k <= half; k++) cell(i, k, Math.abs(k) === half ? '#6B4A2A' : k < 0 ? '#B07A3E' : '#A8743A');
       }
-      for (const [i, k] of [[len, 2], [len + 1, -3], [len + 2, 3], [len + 3, -2], [len + 4, 0]]) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, '#F4E3C1'); // 쇠 가시
+      for (const [i, k] of [[len, -2], [len + 1, 2], [len + 2, -3], [len + 3, 3], [len + 4, -3], [len + 5, 2], [len + 6, 0]]) cell(i, k, '#F4E3C1'); // 쇠 가시
     }
 
     katana(hx, hy, a) {
