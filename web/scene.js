@@ -1145,16 +1145,25 @@
       for (let i = len; i <= len + 1; i++) for (let k = -1; k <= 1; k++) this.px(hx + cx * i * PX + gx * k * PX, hy + sy * i * PX + gy * k * PX, PX, PX, k === -1 || i === len + 1 ? '#DDE3F0' : '#9AA3B8');
     }
 
-    // 환도(조선의 칼): 가볍게 휜 날과 붉은 술(매듭)이 달린 손잡이
+    // 환도(조선의 칼): 이어진 날(날등은 어둡고 날끝은 하얗게) · 둥근 금빛 코등이 · 붉은 끈을 감은 손잡이 · 아래로 늘어진 술
     hwando(hx, hy, a) {
       const cx = Math.cos(a), sy = Math.sin(a), gx = -sy, gy = cx;
-      for (let k = -1; k <= 1; k++) this.px(hx + gx * k * 2, hy + gy * k * 2, 2, 2, k === 0 ? '#C9962B' : '#2E2B3A');
-      this.px(hx - cx * 3 + gx * 2, hy - sy * 3 + gy * 2, 2, 2, '#D9382E'); // 술
-      this.px(hx - cx * 5 + gx * 3, hy - sy * 5 + gy * 3, 2, 2, '#D9382E');
-      for (let i = 1; i <= 10; i++) {
-        const bow = i > 4 ? Math.round((i - 4) * 0.35) : 0; // 끝으로 갈수록 살짝 휜다
-        this.px(hx + cx * i * PX - gx * bow, hy + sy * i * PX - gy * bow, 2, 2, i >= 9 ? '#FFFFFF' : i % 3 === 0 ? '#DDE6F5' : '#F5F7FF');
+      const O = 2; // 손이 손잡이 가운데를 쥐도록 칼 전체를 두 칸 앞으로
+      const at = (i, k) => [hx + cx * (i + O) * PX + gx * k * PX, hy + sy * (i + O) * PX + gy * k * PX];
+      const cell = (i, k, c) => { const [x, y] = at(i, k); this.px(Math.round(x), Math.round(y), PX, PX, c); };
+      for (let i = 1; i <= 9; i++) {
+        const bend = Math.round(Math.pow(i / 9, 2) * 1.6);       // 끝으로 갈수록 살짝 휜다
+        const tip = i >= 8;
+        if (i <= 7) cell(i, bend - 1, '#8E98B4');                  // 날등
+        cell(i, bend, tip ? '#FFFFFF' : i % 4 === 0 ? '#DDE6F5' : '#F5F7FF'); // 날
       }
+      cell(0, -1, '#C9962B'); cell(0, 0, '#F2C14E'); cell(0, 1, '#C9962B'); // 코등이
+      if (cx < -0.2) return; // 칼끝이 몸 쪽으로 젖혀진 자세(맞을 때)에서는 손잡이가 앞으로 삐져나와 거꾸로 쥔 것처럼 보여서 숨긴다
+      for (let i = -3; i <= -1; i++) cell(i, 0, i === -2 ? '#D9382E' : '#4A2F20'); // 손잡이
+      const [px, py] = at(-4, 0);
+      this.px(Math.round(px), Math.round(py), PX, PX, '#F2C14E');   // 칼머리
+      this.px(Math.round(px), Math.round(py) + PX, PX, PX, '#D9382E'); // 술
+      this.px(Math.round(px), Math.round(py) + PX * 2, PX, PX, '#A82620');
     }
 
     // 도깨비 방망이: 울퉁불퉁한 가시가 박힌 굵은 몽둥이
@@ -1179,7 +1188,7 @@
       const w = hr.skin.weapon || 'sword';
       if (w === 'sword') return this.sword(x, ground - 1, -Math.PI / 2, 8);
       if (w === 'katana') return this.katana(x, ground - 1, -Math.PI / 2);
-      if (w === 'hwando') return this.hwando(x, ground - 1, -Math.PI / 2);
+      if (w === 'hwando') return this.hwando(x, ground - 15, -Math.PI / 2);
       if (w === 'club') return this.club(x, ground - 1, -Math.PI / 2, 7);
       if (w === 'trident') return this.trident(x, ground - 1, -Math.PI / 2, 9);
       if (w === 'ladle') return this.ladle(x, ground - 1, -Math.PI / 2, 8);
