@@ -1152,10 +1152,10 @@
       const at = (i, k) => [hx + cx * (i + O) * PX + gx * k * PX, hy + sy * (i + O) * PX + gy * k * PX];
       const cell = (i, k, c) => { const [x, y] = at(i, k); this.px(Math.round(x), Math.round(y), PX, PX, c); };
       for (let i = 1; i <= 9; i++) {
-        const bend = Math.round(Math.pow(i / 9, 2) * 1.6);       // 끝으로 갈수록 살짝 휜다
+        const bend = Math.round(Math.pow(i / 9, 2) * 1.6);       // 끝으로 갈수록 날등 쪽으로 살짝 휜다 (실제 칼처럼 날이 볼록한 쪽)
         const tip = i >= 8;
-        if (i <= 7) cell(i, bend - 1, '#8E98B4');                  // 날등
-        cell(i, bend, tip ? '#FFFFFF' : i % 4 === 0 ? '#DDE6F5' : '#F5F7FF'); // 날
+        if (i <= 7) cell(i, -bend - 1, '#8E98B4');                 // 날등 (끝이 이쪽으로 휜다)
+        cell(i, -bend, tip ? '#FFFFFF' : i % 4 === 0 ? '#DDE6F5' : '#F5F7FF'); // 날 (바깥쪽에 볼록)
       }
       cell(0, -1, '#C9962B'); cell(0, 0, '#F2C14E'); cell(0, 1, '#C9962B'); // 코등이
       if (cx < -0.2) return; // 칼끝이 몸 쪽으로 젖혀진 자세(맞을 때)에서는 손잡이가 앞으로 삐져나와 거꾸로 쥔 것처럼 보여서 숨긴다
