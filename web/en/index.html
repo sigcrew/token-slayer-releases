@@ -163,6 +163,7 @@ code { font: 13px ui-monospace, Menlo, monospace; background: #232640; padding: 
 
 footer { border-top: 1px solid var(--line); padding-block: 28px 40px; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 footer a { color: var(--muted); }
+footer .vis-note { flex-basis: 100%; font-size: 12px; opacity: 0.8; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 36px; }
@@ -299,7 +300,7 @@ footer a { color: var(--muted); }
           <tr><th>ACTIVITY</th><td>Only watches the <b>time</b> the apps above write files</td><td>Contents never opened</td></tr>
         </table>
       </div>
-      <p class="noserver"><b>NO SERVER</b>Token Slayer has no server of its own and collects nothing. Everything is processed on your computer.</p>
+      <p class="noserver"><b>NO SERVER</b>The Token Slayer app has no server of its own and collects nothing. Everything is processed on your computer.</p>
     </section>
 
     <section id="download">
@@ -330,10 +331,12 @@ footer a { color: var(--muted); }
   <footer>
     <span>Token Slayer · SIG Inc.</span>
     <span><a href="https://github.com/sigcrew/token-slayer-releases/releases">All versions · changelog</a></span>
+    <span class="vis-note">This website counts visitors without cookies (Vercel Web Analytics). The app collects nothing.</span>
     <span><a href="/" hreflang="ko" lang="ko" class="lang">한국어</a></span>
   </footer>
 </div>
 
+<script defer src="/_vercel/insights/script.js"></script>
 <script src="/builtin-packs.js"></script>
 <script src="/scene.js"></script>
 <script>
