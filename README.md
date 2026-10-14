@@ -30,7 +30,7 @@ Claude and Cursor usage lookups are not official public APIs, so the display may
 
 ## Support · 문의
 
-Bug reports and questions: open an [issue](https://github.com/sigcrew/token-slayer-releases/issues). In the app, **Help · Contact → Copy diagnostics** gives you a report to paste (it contains no tokens or personal data).
+Bug reports and questions: open an [issue](https://github.com/sigcrew/token-slayer-releases/issues). Payment, refund or license questions: email [yong@sigcrew.com](mailto:yong@sigcrew.com). In the app, **Help · Contact → Copy diagnostics** gives you a report to paste (it contains no tokens or personal data).
 
 ---
 Made by SIG Inc.
