@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A free desktop app (Mac &amp; Windows) that shows your remaining Claude · Codex · Cursor usage as a hero's HP on your screen">
+<meta name="description" content="A free Mac &amp; Windows desktop widget that shows your remaining Claude Code, Codex and Cursor usage (5-hour, weekly, monthly limits) as a pixel hero's HP. No server, nothing collected.">
 <link rel="icon" href="/icon.png">
 <link rel="canonical" href="https://token-slayer.vercel.app/en/">
 <link rel="alternate" hreflang="ko" href="https://token-slayer.vercel.app/">
@@ -20,7 +20,8 @@
 <meta name="twitter:title" content="Token Slayer — your remaining tokens are the hero's HP">
 <meta name="twitter:description" content="A free desktop app (Mac &amp; Windows) that shows your remaining Claude · Codex · Cursor usage as a hero's HP on your screen">
 <meta name="twitter:image" content="https://token-slayer.vercel.app/og.png">
-<title>Token Slayer</title>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","name":"Token Slayer","applicationCategory":"DeveloperApplication","operatingSystem":"macOS, Windows","description":"A free Mac & Windows desktop widget that shows your remaining Claude Code, Codex and Cursor usage (5-hour, weekly, monthly limits) as a pixel hero's HP. No server, nothing collected.","url":"https://token-slayer.vercel.app/en/","inLanguage":"en","image":"https://token-slayer.vercel.app/og.png","downloadUrl":"https://github.com/sigcrew/token-slayer-releases/releases/latest","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"SIG Inc."}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How can I check my remaining Claude Code usage (5-hour and weekly limits)?","acceptedAnswer":{"@type":"Answer","text":"Install Token Slayer and it reads your 5-hour and weekly limits using your Claude Code login (or a claude.ai login inside the app), then shows them as a pixel hero's HP in a corner of your screen. No need to open a page every time you want to check."}},{"@type":"Question","name":"Can it show my remaining Codex limit too?","acceptedAnswer":{"@type":"Answer","text":"Yes. It shows your Codex 5-hour and weekly limits. It reads the records on this computer and, if you are logged in to Codex, also asks the server for usage so that usage from the web or other devices is included (you can turn this off in the menu)."}},{"@type":"Question","name":"Does it also track my Cursor monthly usage?","acceptedAnswer":{"@type":"Answer","text":"Yes. It uses the login saved by the Cursor app to show your monthly usage (including Auto and API) and the reset time. You only need to be logged in to the Cursor app."}},{"@type":"Question","name":"Does it warn me before I run out?","acceptedAnswer":{"@type":"Answer","text":"Yes. It forecasts when you will hit 0% based on your last 30 minutes of usage, and sends a notification at 20% and 10% remaining. It also tells you when a reset is near and plenty of your limit is left."}},{"@type":"Question","name":"Does it collect my conversations or personal data?","acceptedAnswer":{"@type":"Answer","text":"No. The app has no server of its own and collects nothing. It uses the logins you already have to ask each service for usage only, and never reads your conversations. This website counts visitors without cookies."}},{"@type":"Question","name":"Is it free? Does it work on Windows? Can it break?","acceptedAnswer":{"@type":"Answer","text":"The app is free and runs on macOS and Windows (only the cosmetic packs are an optional purchase). Note that Claude and Cursor usage lookups are not official public APIs, so the display may stop temporarily if those services change; app updates fix that."}}]}]}</script>
+<title>Token Slayer — Free Claude Code, Codex &amp; Cursor usage limit widget</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Silkscreen:wght@400;700&display=swap">
@@ -191,6 +192,7 @@ footer .vis-note { flex-basis: 100%; font-size: 12px; opacity: 0.8; }
     <nav>
       <a href="#rules">Rules</a>
       <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
       <a href="#premium">Premium</a>
       <a href="#privacy">Privacy</a>
       <a href="#download">Download</a>
@@ -254,6 +256,19 @@ footer .vis-note { flex-basis: 100%; font-size: 12px; opacity: 0.8; }
         <div class="feat"><h3>Legendary Dragon <span class="tag">1 / 60000</span></h3><p>Very rarely, a dragon flies in. Once one appears, there's a 7-day cooldown. You'll get a notification when it shows up, so don't miss it.</p></div>
         <div class="feat"><h3>Customization <span class="tag">FREE 17</span></h3><p>Pick hero classes (pirate, chef, astronaut, cat, viking…), incoming enemies (commit logs, notification bombs, type errors) and rest scenes (midnight ramen, a handheld console) for each service. A few unlock as you level up.</p></div>
         <div class="feat"><h3>Weekly record card</h3><p>Turns how much you used each service this week into a single image, and copies it to the clipboard so you can paste it right away.</p></div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <h2>FAQ</h2>
+      <p class="sub">How to see your Claude Code, Codex and Cursor usage at a glance, and what the app reads.</p>
+      <div class="faq">
+        <div><h3>How can I check my remaining Claude Code usage (5-hour and weekly limits)?</h3><p>Install Token Slayer and it reads your 5-hour and weekly limits using your Claude Code login (or a claude.ai login inside the app), then shows them as a pixel hero's HP in a corner of your screen. No need to open a page every time you want to check.</p></div>
+        <div><h3>Can it show my remaining Codex limit too?</h3><p>Yes. It shows your Codex 5-hour and weekly limits. It reads the records on this computer and, if you are logged in to Codex, also asks the server for usage so that usage from the web or other devices is included (you can turn this off in the menu).</p></div>
+        <div><h3>Does it also track my Cursor monthly usage?</h3><p>Yes. It uses the login saved by the Cursor app to show your monthly usage (including Auto and API) and the reset time. You only need to be logged in to the Cursor app.</p></div>
+        <div><h3>Does it warn me before I run out?</h3><p>Yes. It forecasts when you will hit 0% based on your last 30 minutes of usage, and sends a notification at 20% and 10% remaining. It also tells you when a reset is near and plenty of your limit is left.</p></div>
+        <div><h3>Does it collect my conversations or personal data?</h3><p>No. The app has no server of its own and collects nothing. It uses the logins you already have to ask each service for usage only, and never reads your conversations. This website counts visitors without cookies.</p></div>
+        <div><h3>Is it free? Does it work on Windows? Can it break?</h3><p>The app is free and runs on macOS and Windows (only the cosmetic packs are an optional purchase). Note that Claude and Cursor usage lookups are not official public APIs, so the display may stop temporarily if those services change; app updates fix that.</p></div>
       </div>
     </section>
 
