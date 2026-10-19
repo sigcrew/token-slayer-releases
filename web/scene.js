@@ -691,7 +691,7 @@
       const hpTxt = hr.offDuty ? 'OFF' : hr.hp == null ? '--' : `${Math.round(hr.hpTarget != null ? hr.hpTarget : hr.hp)}%`;
       this.text(hpTxt, w - 10, top + 6, hr.hp == null ? '#6B6F86' : hr.dead ? '#FF4D5A' : '#F4F4F8', { align: 'right' });
       // 휴무(플랜에 포함된 사용량 없음): 숫자 대신 OFF, 왼쪽에 NO PLAN
-      if (hr.offDuty) this.text('NO PLAN', w - 10 - this.textWidth(hpTxt) - 6, top + 6, '#8A8FA8', { align: 'right', s: 1 });
+      if (hr.offDuty) this.text('NO PLAN', w - 10 - this.textWidth(hpTxt) - 12, top + 6, '#8A8FA8', { align: 'right', s: 1 });
       // HP가 어느 한도 기준인지 (5H 5시간 · WK 주간 · MO 월간): 숫자 왼쪽. BURN·OUT 표시는 그만큼 더 왼쪽으로
       const tagW = hr.hpTag && hr.hp != null ? this.textWidth(hr.hpTag, 1) + 4 : 0;
       if (tagW) this.text(hr.hpTag, w - 10 - this.textWidth(hpTxt) - 3, top + 11, '#8A8FA8', { align: 'right', s: 1 });
